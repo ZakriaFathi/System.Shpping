@@ -11,7 +11,10 @@ public class ShippingDbContext : DbContext
 {
     public DbSet<Branch> Branchs { get; set; }
     public DbSet<City> Cities { get; set; }
+    public DbSet<User> Users { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<Representative> Representatives { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Permission> Permissions { get; set; } 
     public DbSet<Role> Roles { get; set; } 
@@ -25,6 +28,10 @@ public class ShippingDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         this.AddUserPermissionsBuilder(modelBuilder);
+        //this.AddUserBuilder(modelBuilder);
+        //this.AddCustomerBuilder(modelBuilder);
+        //this.AddEmployeeBuilder(modelBuilder);
+        //this.AddRepresentativeBuilder(modelBuilder);
         base.OnModelCreating(modelBuilder);
     }
 

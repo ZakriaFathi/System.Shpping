@@ -8,17 +8,13 @@ namespace Shipping.Utils.Enums
 {
     public enum UserType
     {
-        SuperAdmin = 1,
-        Admin,
-        Employee,
+        Employee = 1,
         Representative,
         User
     }
     public enum UserTypeVm
     {
-        SuperAdmin = 1,
-        Admin,
-        Employee,
+        Employee = 1,
         Representative,
     }
 }

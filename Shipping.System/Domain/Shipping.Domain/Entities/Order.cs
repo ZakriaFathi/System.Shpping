@@ -1,4 +1,5 @@
 using Shipping.Utils.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shipping.Domain.Entities;
 
@@ -17,10 +18,11 @@ public class Order
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public Guid? RepresentativesId { get; set; }
     public Guid CustomerId { get; set; }
     public Customer Customers { get; set; }
 
+    public Guid? RepresentativesId { get; set; }
+    public Representative Representatives { get; set; }
 
 
     public Guid BranchId { get; set; }

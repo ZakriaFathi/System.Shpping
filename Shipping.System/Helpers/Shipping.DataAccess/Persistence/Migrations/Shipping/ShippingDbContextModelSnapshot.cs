@@ -69,8 +69,34 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ActivateState")
-                        .HasColumnType("int");
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("Shipping.Domain.Entities.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -79,33 +105,24 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                     b.Property<Guid?>("BranchId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserType")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("Customers");
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("Shipping.Domain.Entities.Order", b =>
@@ -164,6 +181,8 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
 
                     b.HasIndex("CustomerId");
 
+                    b.HasIndex("RepresentativesId");
+
                     b.ToTable("Orders");
                 });
 
@@ -187,6 +206,39 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                     b.ToTable("Permissions");
                 });
 
+            modelBuilder.Entity("Shipping.Domain.Entities.Representative", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Representatives");
+                });
+
             modelBuilder.Entity("Shipping.Domain.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -202,7 +254,31 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("Shipping.Domain.UserPermission", b =>
+            modelBuilder.Entity("Shipping.Domain.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ActivateState")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Shipping.Domain.Entities.UserPermission", b =>
                 {
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
@@ -230,11 +306,30 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
 
             modelBuilder.Entity("Shipping.Domain.Entities.Customer", b =>
                 {
+                    b.HasOne("Shipping.Domain.Entities.User", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("Shipping.Domain.Entities.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Shipping.Domain.Entities.Employee", b =>
+                {
                     b.HasOne("Shipping.Domain.Entities.Branch", "Branch")
-                        .WithMany("Customers")
+                        .WithMany("Employees")
                         .HasForeignKey("BranchId");
 
+                    b.HasOne("Shipping.Domain.Entities.User", "User")
+                        .WithOne("Employee")
+                        .HasForeignKey("Shipping.Domain.Entities.Employee", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Branch");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Shipping.Domain.Entities.Order", b =>
@@ -251,9 +346,15 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Shipping.Domain.Entities.Representative", "Representatives")
+                        .WithMany("Orders")
+                        .HasForeignKey("RepresentativesId");
+
                     b.Navigation("Branchs");
 
                     b.Navigation("Customers");
+
+                    b.Navigation("Representatives");
                 });
 
             modelBuilder.Entity("Shipping.Domain.Entities.Permission", b =>
@@ -267,9 +368,26 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Shipping.Domain.UserPermission", b =>
+            modelBuilder.Entity("Shipping.Domain.Entities.Representative", b =>
                 {
-                    b.HasOne("Shipping.Domain.Entities.Customer", "Customer")
+                    b.HasOne("Shipping.Domain.Entities.Branch", "Branch")
+                        .WithMany("Representatives")
+                        .HasForeignKey("BranchId");
+
+                    b.HasOne("Shipping.Domain.Entities.User", "User")
+                        .WithOne("Representative")
+                        .HasForeignKey("Shipping.Domain.Entities.Representative", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Shipping.Domain.Entities.UserPermission", b =>
+                {
+                    b.HasOne("Shipping.Domain.Entities.User", "User")
                         .WithMany("UserPermissions")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -281,23 +399,23 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Customer");
-
                     b.Navigation("Permission");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Shipping.Domain.Entities.Branch", b =>
                 {
                     b.Navigation("Citys");
 
-                    b.Navigation("Customers");
+                    b.Navigation("Employees");
+
+                    b.Navigation("Representatives");
                 });
 
             modelBuilder.Entity("Shipping.Domain.Entities.Customer", b =>
                 {
                     b.Navigation("Orders");
-
-                    b.Navigation("UserPermissions");
                 });
 
             modelBuilder.Entity("Shipping.Domain.Entities.Permission", b =>
@@ -305,9 +423,28 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                     b.Navigation("UserPermissions");
                 });
 
+            modelBuilder.Entity("Shipping.Domain.Entities.Representative", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("Shipping.Domain.Entities.Role", b =>
                 {
                     b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Shipping.Domain.Entities.User", b =>
+                {
+                    b.Navigation("Customer")
+                        .IsRequired();
+
+                    b.Navigation("Employee")
+                        .IsRequired();
+
+                    b.Navigation("Representative")
+                        .IsRequired();
+
+                    b.Navigation("UserPermissions");
                 });
 #pragma warning restore 612, 618
         }

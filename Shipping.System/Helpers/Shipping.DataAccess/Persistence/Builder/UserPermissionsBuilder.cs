@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Shipping.Domain;
+using Shipping.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ namespace Shipping.DataAccess.Persistence.Builder
             builder.Entity<UserPermission>(b =>
             {
                 b.HasKey(up => new { up.CustomerId, up.PermissionId });
-                b.HasOne(up => up.Customer)
+                b.HasOne(up => up.User)
                     .WithMany(u => u.UserPermissions)
                     .HasForeignKey(up => up.CustomerId)
                     .OnDelete(DeleteBehavior.Restrict);
@@ -25,8 +25,6 @@ namespace Shipping.DataAccess.Persistence.Builder
                     .HasForeignKey(rp => rp.PermissionId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // b.Property(up => up.ReviewState).IsRequired();
-                // b.Property(up => up.AllowedBy).IsRequired();
             });
         }
     }

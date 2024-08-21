@@ -30,7 +30,7 @@ public static class ApplicantsExtension
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging());
         
-        services.AddIdentity<User, IdentityRole>(options =>
+        services.AddIdentity<AppUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 8;

@@ -52,12 +52,12 @@ public class UserManagementController : ControllerBase
     [HttpGet("GetAdministrators")]  
     public async Task<OperationResult<List<GetUsersResponse>>> GetAdministrators(CancellationToken cancellationToken)
     { 
-       var result = await _mediator.Send(new GetAdminsRequest(), cancellationToken);
+       var result = await _mediator.Send(new GetEmployeesRequest(), cancellationToken);
 
        return result.ToOperationResult();
     }
     [HttpGet("GetAdministratorsByBranchId")]  
-    public async Task<OperationResult<List<GetUsersResponse>>> GetAdministratorsByBranchId([FromQuery]GetAdminsByBranchIdRequest request,CancellationToken cancellationToken)
+    public async Task<OperationResult<List<GetUsersResponse>>> GetAdministratorsByBranchId([FromQuery]GetEmployeesByBranchIdRequest request,CancellationToken cancellationToken)
     { 
        var result = await _mediator.Send(request, cancellationToken);
 

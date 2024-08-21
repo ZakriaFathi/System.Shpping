@@ -12,4 +12,10 @@ public class GetCustomerOrderResponse
     public string SenderPhoneNo { get; set; }
     public string RecipientPhoneNo { get; set; }
     public decimal? Price { get; set; }
+    public RepresentativeVm Representative { get; set; }
+}
+public class RepresentativeVm 
+{
+    public string Name { get; set; }
+    public string PhoneNumber { get; set; }
 }

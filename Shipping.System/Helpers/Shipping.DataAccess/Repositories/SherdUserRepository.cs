@@ -6,7 +6,6 @@ using Shipping.Application.Abstracts;
 using Shipping.Application.Models.IdentityModel;
 using Shipping.Application.Models.UserManagement;
 using Shipping.DataAccess.Persistence.DataBase;
-using Shipping.Domain;
 using Shipping.Domain.Entities;
 using Shipping.Domain.Models;
 using Shipping.Utils.Enums;
@@ -15,9 +14,9 @@ namespace Shipping.DataAccess.Repositories;
 
 public class SherdUserRepository : ISherdUserRepository
 {
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ShippingDbContext _shippingDb;
-    public SherdUserRepository(UserManager<User> userManager, ShippingDbContext shippingDb)
+    public SherdUserRepository(UserManager<AppUser> userManager, ShippingDbContext shippingDb)
     {
         _userManager = userManager;
         _shippingDb = shippingDb;
@@ -25,7 +24,7 @@ public class SherdUserRepository : ISherdUserRepository
     
     #region Identity
 
-    public async Task<Result<User>> GetIdentityUserById(string userId, CancellationToken cancellationToken)
+    public async Task<Result<AppUser>> GetIdentityUserById(string userId, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
@@ -34,7 +33,7 @@ public class SherdUserRepository : ISherdUserRepository
         return user;
     }
 
-    public async Task<Result<User>> GetIdentityUserByUserName(string userName, CancellationToken cancellationToken)
+    public async Task<Result<AppUser>> GetIdentityUserByUserName(string userName, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByNameAsync(userName);
         if (user != null)
@@ -43,12 +42,12 @@ public class SherdUserRepository : ISherdUserRepository
         return user;
     }
 
-    public async Task<Result<User>> SingUp(SingUpCommnd request, CancellationToken cancellationToken)
+    public async Task<Result<AppUser>> SingUp(SingUpCommnd request, CancellationToken cancellationToken)
     {
         if (await _userManager.FindByNameAsync(request.UserName) is not null)
             return Result.Fail(new List<string>() { "اسم المستخدم موجود مسبقا" });
         
-        var user = new User
+        var user = new AppUser
         {
             FirstName = request.FirstName,
             LastName = request.LastName,
@@ -69,11 +68,11 @@ public class SherdUserRepository : ISherdUserRepository
         return user;
     }
 
-    public async Task<Result<User>> InsertIdentityUser(InsertAndUpdateIdentityUser command, CancellationToken cancellationToken)
+    public async Task<Result<AppUser>> InsertIdentityUser(InsertAndUpdateIdentityUser command, CancellationToken cancellationToken)
     {
         await _userManager.FindByNameAsync(command.UserName);
         
-        var user = new User
+        var user = new AppUser
         {
             FirstName = command.FirstName,
             LastName = command.LastName,
@@ -207,62 +206,22 @@ public class SherdUserRepository : ISherdUserRepository
         return Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
     }
 
-    public async Task<Result<Customer>> GetUserById(Guid userId, CancellationToken cancellationToken)
-    {
-        var user = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.Id == userId,
-            cancellationToken);
-        if (user is null)
-            return Result.Fail(new List<string>() { "هذا المستخدم غير موجود" });
-
-        return user;    
-    }
-
     public async Task<Result<string>> InsertUserAsync(InsertAndUpdateUserCommnd request, CancellationToken cancellationToken)
     {
-        var customer = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.Id == Guid.Parse(request.UserId.ToString()),
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == Guid.Parse(request.UserId.ToString()),
             cancellationToken);
-        if (customer is not null)
+        if (user is not null)
             return Result.Fail(new List<string>() { "هذا المستخدم موجود بالفعل" });
         
-        var newUser = new Customer()
+        var newUser = new User()
         {
             Id = Guid.Parse(request.UserId.ToString()),
-            PhoneNumber = request.PhoneNumber,
-            Address = request.Address,
             UserName = request.UserName,
             UserType = request.UserType,
             Password = request.Password,
             ActivateState = ActivateState.Active,
-            Name = request.Name,
-            BranchId = request.BranchId 
         };
-        await _shippingDb.Customers.AddAsync(newUser, cancellationToken);
-        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
-        
-        if (result <= 0)
-            return Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" });
-        
-        return newUser.Id.ToString();    
-    } 
-    public async Task<Result<string>> InsertCustomerAsync(InsertAndUpdateUserCommnd request, CancellationToken cancellationToken)
-    {
-        var customer = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.Id == Guid.Parse(request.UserId.ToString()),
-            cancellationToken);
-        if (customer is not null)
-            return Result.Fail(new List<string>() { "هذا المستخدم موجود بالفعل" });
-        
-        var newUser = new Customer()
-        {
-            Id = Guid.Parse(request.UserId.ToString()),
-            PhoneNumber = request.PhoneNumber,
-            Address = request.Address,
-            UserName = request.UserName,
-            UserType = request.UserType,
-            Password = request.Password,
-            ActivateState = ActivateState.Active,
-            Name = request.Name
-        };
-        await _shippingDb.Customers.AddAsync(newUser, cancellationToken);
+        await _shippingDb.Users.AddAsync(newUser, cancellationToken);
         var result = await _shippingDb.SaveChangesAsync(cancellationToken);
         
         if (result <= 0)
@@ -271,13 +230,82 @@ public class SherdUserRepository : ISherdUserRepository
         return newUser.Id.ToString();    
     }
 
-    public async Task<Result<string>> ChangePasswordCustomerAsync(ChangePasswordCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> InsertEmployeeAsync(InsertAndUpdateEmployeeCommnd request, CancellationToken cancellationToken)
     {
-        var customer = await GetUserById(request.UserId, cancellationToken);
-        if (customer.Value is null)
-            return Result.Fail(customer.Errors.ToList());
+        var user = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId.ToString()),
+            cancellationToken);
+        if (user is not null)
+            return Result.Fail(new List<string>() { "هذا المستخدم موجود بالفعل" });
         
-        var user = customer.Value;
+        var newUser = new Employee()
+        {
+            UserId = Guid.Parse(request.UserId.ToString()),
+            PhoneNumber = request.PhoneNumber,
+            Address = request.Address,
+            Name = request.Name,
+            BranchId = request.BranchId
+        };
+        await _shippingDb.Employees.AddAsync(newUser, cancellationToken);
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        if (result <= 0)
+            return Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" });
+        
+        return newUser.Id.ToString();  
+    }
+
+    public async Task<Result<string>> InsertRepresentativeAsync(InsertAndUpdateRepresentativeCommnd request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId.ToString()),
+            cancellationToken);
+        if (user is not null)
+            return Result.Fail(new List<string>() { "هذا المستخدم موجود بالفعل" });
+        
+        var newUser = new Representative()
+        {
+            UserId = Guid.Parse(request.UserId.ToString()),
+            PhoneNumber = request.PhoneNumber,
+            Address = request.Address,
+            Name = request.Name,
+            BranchId = request.BranchId
+        };
+        await _shippingDb.Representatives.AddAsync(newUser, cancellationToken);
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        if (result <= 0)
+            return Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" });
+        
+        return newUser.Id.ToString();      
+    }
+
+    public async Task<Result<string>> InsertCustomerAsync(InsertAndUpdateCustomerCommnd request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId.ToString()),
+            cancellationToken);
+        if (user is not null)
+            return Result.Fail(new List<string>() { "هذا المستخدم موجود بالفعل" });
+        
+        var newUser = new Customer()
+        {
+            UserId = Guid.Parse(request.UserId.ToString()),
+            PhoneNumber = request.PhoneNumber,
+            Address = request.Address,
+            Name = request.Name,
+        };
+        await _shippingDb.Customers.AddAsync(newUser, cancellationToken);
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        if (result <= 0)
+            return Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" });
+        
+        return newUser.Id.ToString();      
+    }
+
+    public async Task<Result<string>> ChangePasswordUserAsync(ChangePasswordCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
+        if (user == null)
+            return Result.Fail(new List<string>() { "المستخدم غير موجود" });
         
         if (user.Password != request.OldPassWord)
             return Result.Fail(new List<string>() { "كلمة المرور السابقة غير صحيحة" });
@@ -291,44 +319,90 @@ public class SherdUserRepository : ISherdUserRepository
         if (result <= 0)
             Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
        
-        return "تم تغيير كلمة المرور بنجاح";    
+        return "تم تغيير كلمة المرور بنجاح";
     }
 
-    public async Task<Result<string>> ChangeCustomerActivationAsync(ChangeUserActivationCommnd request, CancellationToken cancellationToken)
+    public async Task<Result<string>> ChangeUserActivationAsync(ChangeUserActivationCommnd request, CancellationToken cancellationToken)
     {
-        var customer = await GetUserById(request.UserId, cancellationToken);
-        if (customer.Value is null)
-            return Result.Fail(customer.Errors.ToList());
-        
-        var user = customer.Value;
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
+        if (user == null)
+            return Result.Fail(new List<string>() { "المستخدم غير موجود" });
         
         user.ActivateState = request.State;
+
         var result = await _shippingDb.SaveChangesAsync(cancellationToken);
         if (result <= 0)
             Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
         
-        return "تم تغيير حالة المستخدم بنجاح";  
+        return "تم تغيير حالة المستخدم بنجاح";
     }
 
-    public async Task<Result<string>> UpdateCustomerAsync(InsertAndUpdateUserCommnd request, CancellationToken cancellationToken)
+    public async Task<Result<string>> UpdateUserAsync(InsertAndUpdateUserCommnd request, CancellationToken cancellationToken)
     {
-        var customer = await GetUserById(request.UserId, cancellationToken);
-        if (customer.Value is null)
-            return Result.Fail(customer.Errors.ToList());
-        
-        var user = customer.Value;    
-
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
+        if (user == null)
+            return Result.Fail(new List<string>() { "المستخدم غير موجود" });
         
         user.UserName = request.UserName;
-        user.PhoneNumber = request.PhoneNumber;
-        user.Address = request.Address;
-        user.Name = request.Name;
 
         var result = await _shippingDb.SaveChangesAsync(cancellationToken);
         if (result <= 0)
             Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
         
         return "تم تعديل المشترك بنجاح";
+    }
+
+    public async Task<Result<string>> UpdateCustomerAsync(InsertAndUpdateCustomerCommnd request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+        if (user == null)
+            return Result.Fail(new List<string>() { "المستخدم غير موجود" });
+        
+        user.PhoneNumber = request.PhoneNumber;
+        user.Address = request.Address;
+        user.Name = request.Name;
+        
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        if (result <= 0)
+            Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+        
+        return "تم تعديل المشترك بنجاح";
+    }
+
+    public async Task<Result<string>> UpdateRepresentativeAsync(InsertAndUpdateRepresentativeCommnd request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+        if (user == null)
+            return Result.Fail(new List<string>() { "المستخدم غير موجود" });
+        
+        user.PhoneNumber = request.PhoneNumber;
+        user.Address = request.Address;
+        user.Name = request.Name;
+        user.BranchId = request.BranchId;
+        
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        if (result <= 0)
+            Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+        
+        return "تم تعديل المشترك بنجاح";    
+    }
+
+    public async Task<Result<string>> UpdateEmployeeAsync(InsertAndUpdateEmployeeCommnd request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+        if (user == null)
+            return Result.Fail(new List<string>() { "المستخدم غير موجود" });
+        
+        user.PhoneNumber = request.PhoneNumber;
+        user.Address = request.Address;
+        user.Name = request.Name;
+        user.BranchId = request.BranchId;
+        
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        if (result <= 0)
+            Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+        
+        return "تم تعديل المشترك بنجاح";  
     }
 
     public async Task<Result<string>> CreateUserPermissions(InsertAndUpdateUserPermissions request, CancellationToken cancellationToken)

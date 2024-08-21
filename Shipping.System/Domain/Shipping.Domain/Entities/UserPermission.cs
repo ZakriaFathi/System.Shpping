@@ -1,6 +1,6 @@
 using Shipping.Domain.Entities;
 
-namespace Shipping.Domain;
+namespace Shipping.Domain.Entities;
 
 public class UserPermission
 {
@@ -8,5 +8,5 @@ public class UserPermission
     public Permission Permission { get; set; }
 
     public Guid CustomerId { get; set; }
-    public Customer Customer { get; set; }
+    public User User { get; set; }
 }

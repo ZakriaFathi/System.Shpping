@@ -7,5 +7,6 @@ public class Branch
     public bool IsMajor { get; set; }
     
     public ICollection<City> Citys { get; set; }
-    public ICollection<Customer> Customers { get; set; }
+    public ICollection<Employee> Employees { get; set; }
+    public ICollection<Representative> Representatives { get; set; }
 }

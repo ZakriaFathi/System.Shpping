@@ -22,9 +22,9 @@ public interface IUserManagmentRepository
     Task<Result<string>> UpdateUserAsync(UpdateUserRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetCustomersResponse>>> GetCustomersAsync(GetCustomersRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetUsersResponse>>> GetRepresentativesAsync(GetRepresentativesRequest request, CancellationToken cancellationToken);
-    Task<Result<List<GetUsersResponse>>> GetAdministratorsAsync(GetAdminsRequest request, CancellationToken cancellationToken);
+    Task<Result<List<GetUsersResponse>>> GetEmployeesAsync(GetEmployeesRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetUsersResponse>>> GetRepresentativesByBranchIdAsync(GetRepresentativesByBranchIdRequest request, CancellationToken cancellationToken);
-    Task<Result<List<GetUsersResponse>>> GetAdministratorsByBranchIdAsync(GetAdminsByBranchIdRequest request, CancellationToken cancellationToken);
+    Task<Result<List<GetUsersResponse>>> GetEmployeesByBranchIdAsync(GetEmployeesByBranchIdRequest request, CancellationToken cancellationToken);
     Task<Result<string>> CreateUserPermissionsAsync(CreateUserPermissionsRequest request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateUserPermissionsAsync(UpdateUserPermissionsRequest request, CancellationToken cancellationToken);
 }

@@ -36,21 +36,19 @@ public class UserManageRepository : IUserManagmentRepository
         _permissionsService = permissionsService;
     }
 
+
     public async Task<Result<string>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
         var user = await _sherdUserRepository.GetIdentityUserByUserName(request.UserName, cancellationToken);
-        
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
         
         var types = request.UserType switch
         {
-            UserTypeVm.SuperAdmin => UserType.SuperAdmin,
-            UserTypeVm.Admin => UserType.Admin,
             UserTypeVm.Employee => UserType.Employee,
             UserTypeVm.Representative => UserType.Representative,
             _ => UserType.User
-        };
+        };    
 
         var identityUser = await _sherdUserRepository.InsertIdentityUser(new InsertAndUpdateIdentityUser()
         {
@@ -66,24 +64,46 @@ public class UserManageRepository : IUserManagmentRepository
         
         if (!identityUser.IsSuccess)
             return Result.Fail(identityUser.Errors.ToList());
-
-        var insertUser =
-            await _sherdUserRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
+        
+        var userProfile = await _sherdUserRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
+        {
+            UserId = Guid.Parse(identityUser.Value.Id),
+            UserName = identityUser.Value.UserName,
+            UserType = identityUser.Value.UserType,
+            Password = request.Password,
+        }, cancellationToken);
+        
+        if (!userProfile.IsSuccess)
+            return Result.Fail(userProfile.Errors.ToList());
+        
+        var insertUser = identityUser.Value.UserType switch
+        {
+            UserType.Representative => await _sherdUserRepository.InsertRepresentativeAsync(new InsertAndUpdateRepresentativeCommnd()
             {
                 UserId = Guid.Parse(identityUser.Value.Id),
-                Password = request.Password,
-                UserName = request.UserName,
-                UserType = types,
-                Address = request.Address,
-                PhoneNumber = request.PhoneNumber,
+                Address = identityUser.Value.Address,
+                PhoneNumber = identityUser.Value.PhoneNumber,
                 Name = request.FirstName + " " + request.LastName,
                 BranchId = request.BranchId
-            }, cancellationToken);
-        
+                
+            }, cancellationToken),
+            
+            UserType.Employee => await _sherdUserRepository.InsertEmployeeAsync(new InsertAndUpdateEmployeeCommnd()
+            {
+                UserId = Guid.Parse(identityUser.Value.Id),
+                Address = identityUser.Value.Address,
+                PhoneNumber = identityUser.Value.PhoneNumber,
+                Name = request.FirstName + " " + request.LastName,
+                BranchId = request.BranchId
+            }, cancellationToken),
+            _ => Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" })
+        };
+
         if (!insertUser.IsSuccess)
             return Result.Fail(insertUser.Errors.ToList());
         
         return "تمت عملية اضافة المستخدم بنجاح ";
+        
     }
 
     public async Task<Result<string>> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken cancellationToken)
@@ -103,14 +123,15 @@ public class UserManageRepository : IUserManagmentRepository
         if (!userPassword.IsSuccess)
             return Result.Fail(userPassword.Errors.ToList());
 
-        var chengePassword =
-            await _sherdUserRepository.ChangePasswordCustomerAsync(new ChangePasswordCommand()
+        var chengePassword = await _sherdUserRepository.ChangePasswordUserAsync(
+            new ChangePasswordCommand()
             {
                 UserId = Guid.Parse(user.Value.Id),
                 NewPassWord = request.NewPassword,
                 OldPassWord = request.OldPassword,
                 ConfirmNewPassWord = request.ConfirmNewPassWord
             }, cancellationToken);
+        
         if (!chengePassword.IsSuccess)
             return Result.Fail(chengePassword.Errors.ToList());
         return "تم تغيير كلمة المرور بنجاح";
@@ -134,7 +155,7 @@ public class UserManageRepository : IUserManagmentRepository
             return Result.Fail(changeUserActivation.Errors.ToList());
 
         var chengeActivation =
-            await _sherdUserRepository.ChangeCustomerActivationAsync(new ChangeUserActivationCommnd()
+            await _sherdUserRepository.ChangeUserActivationAsync(new ChangeUserActivationCommnd()
                 {
                     UserId = Guid.Parse(user.Value.Id),
                     State = request.State
@@ -166,131 +187,150 @@ public class UserManageRepository : IUserManagmentRepository
         
         if (!updateUser.IsSuccess)
             return Result.Fail(updateUser.Errors.ToList());
+        
+        var userProfile = await _sherdUserRepository.UpdateUserAsync(new InsertAndUpdateUserCommnd()
+        {
+            UserId = Guid.Parse(updateUser.Value),
+            UserName = request.UserName,
+        }, cancellationToken);
+        
+        if (!userProfile.IsSuccess)
+            return Result.Fail(userProfile.Errors.ToList());
 
-        var update =
-            await _sherdUserRepository.UpdateCustomerAsync(new InsertAndUpdateUserCommnd()
-            {
-                UserId = Guid.Parse(user.Value.Id),
-                UserName = request.UserName,
-                PhoneNumber = request.PhoneNumber,
-                Address = request.Address,
-                Name = request.FristName + " " + request.LastName
-            }, cancellationToken);
-
+        var update = user.Value.UserType switch
+        {
+            UserType.Representative => await _sherdUserRepository.UpdateRepresentativeAsync(
+                new InsertAndUpdateRepresentativeCommnd()
+                {
+                    UserId = Guid.Parse(updateUser.Value),
+                    PhoneNumber = request.PhoneNumber,
+                    Address = request.Address,
+                    Name = request.FristName + " " + request.LastName
+                }, cancellationToken),
+            UserType.Employee => await _sherdUserRepository.UpdateEmployeeAsync(
+                new InsertAndUpdateEmployeeCommnd()
+                {
+                    UserId = Guid.Parse(updateUser.Value),
+                    PhoneNumber = request.PhoneNumber,
+                    Address = request.Address,
+                    Name = request.FristName + " " + request.LastName
+                }, cancellationToken),
+        };
         if (!update.IsSuccess)
             return Result.Fail(update.Errors.ToList());
         
         return "تم تعديل المستخدم بنجاح";
+
     }
 
-    public async Task<Result<List<GetCustomersResponse>>> GetCustomersAsync(GetCustomersRequest request, CancellationToken cancellationToken)
+
+    public async Task<Result<List<GetCustomersResponse>>> GetCustomersAsync(GetCustomersRequest request,
+        CancellationToken cancellationToken)
     {
-        var users = await _shippingDb.Customers.Where(u => u.UserType == UserType.User)
+        var users = await _shippingDb.Customers
+            .Include(x => x.User)
             .Select(x => new GetCustomersResponse()
             {
-                UserName = x.UserName,
-                ActivateState = x.ActivateState,
-                Email = x.Email,
-                UserType = x.UserType,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
                 Address = x.Address,
                 PhoneNumber = x.PhoneNumber,
                 Name = x.Name,
-                Password = x.Password
+                Password = x.User.Password
             }).ToListAsync(cancellationToken);
 
 
         if (users.Count <= 0) return Result.Fail("لا يوجد مستخدمين");
-        
-        return users;    
+
+        return users;
     }
 
     public async Task<Result<List<GetUsersResponse>>> GetRepresentativesAsync(GetRepresentativesRequest request, CancellationToken cancellationToken)
     {
-        var users = await _shippingDb.Customers.Where(u => u.UserType == UserType.Representative)
+        var users = await _shippingDb.Representatives
             .Select(x => new GetUsersResponse()
             {
-                UserName = x.UserName,
-                ActivateState = x.ActivateState,
-                Email = x.Email,
-                UserType = x.UserType,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
                 Address = x.Address,
                 PhoneNumber = x.PhoneNumber,
                 Name = x.Name,
-                Password = x.Password,
+                Password = x.User.Password,
                 BranchName = x.Branch.Name
             }).ToListAsync(cancellationToken);
-
-
-        if (users.Count <= 0) return Result.Fail("لا يوجد مستخدمين");
         
-        return users; 
+        if (users.Count <= 0)
+            return Result.Fail("لا يوجد مندوبين");
+
+        return users;
     }
 
-    public async Task<Result<List<GetUsersResponse>>> GetAdministratorsAsync(GetAdminsRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetUsersResponse>>> GetEmployeesAsync(GetEmployeesRequest request, CancellationToken cancellationToken)
     {
-        var users = await _shippingDb.Customers.Where(u => u.UserType == UserType.Admin)
+        var users = await _shippingDb.Employees
             .Select(x => new GetUsersResponse()
             {
-                UserName = x.UserName,
-                ActivateState = x.ActivateState,
-                Email = x.Email,
-                UserType = x.UserType,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
                 Address = x.Address,
                 PhoneNumber = x.PhoneNumber,
                 Name = x.Name,
-                Password = x.Password,
+                Password = x.User.Password,
                 BranchName = x.Branch.Name
             }).ToListAsync(cancellationToken);
-
-
-        if (users.Count <= 0) return Result.Fail("لا يوجد مستخدمين");
         
-        return users; 
+        if (users.Count <= 0)
+            return Result.Fail("لا يوجد مندوبين");
+
+        return users;
     }
 
     public async Task<Result<List<GetUsersResponse>>> GetRepresentativesByBranchIdAsync(GetRepresentativesByBranchIdRequest request,
         CancellationToken cancellationToken)
     {
-        var user = await _shippingDb.Customers
-            .Where(x => x.BranchId == request.BranchId && x.UserType == UserType.Representative)
+        var users = await _shippingDb.Representatives
+            .Where(x=>x.BranchId == request.BranchId)
             .Select(x => new GetUsersResponse()
             {
-                UserName = x.UserName,
-                ActivateState = x.ActivateState,
-                Email = x.Email,
-                UserType = x.UserType,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
                 Address = x.Address,
                 PhoneNumber = x.PhoneNumber,
                 Name = x.Name,
-                Password = x.Password,
+                Password = x.User.Password,
                 BranchName = x.Branch.Name
             }).ToListAsync(cancellationToken);
         
-        if (user.Count <= 0) return Result.Fail("لا يوجد مستخدمين");
-        
-        return user;
+        if (users.Count <= 0)
+            return Result.Fail("لا يوجد مندوبين");
+
+        return users;
     }
 
-    public async Task<Result<List<GetUsersResponse>>> GetAdministratorsByBranchIdAsync(GetAdminsByBranchIdRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetUsersResponse>>> GetEmployeesByBranchIdAsync(GetEmployeesByBranchIdRequest request, CancellationToken cancellationToken)
     {
-        var user = await _shippingDb.Customers
-            .Where(x => x.BranchId == request.BranchId && x.UserType == UserType.Admin)
+        var users = await _shippingDb.Employees
+            .Where(x=>x.BranchId == request.BranchId)
             .Select(x => new GetUsersResponse()
             {
-                UserName = x.UserName,
-                ActivateState = x.ActivateState,
-                Email = x.Email,
-                UserType = x.UserType,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
                 Address = x.Address,
                 PhoneNumber = x.PhoneNumber,
                 Name = x.Name,
-                Password = x.Password,
+                Password = x.User.Password,
                 BranchName = x.Branch.Name
             }).ToListAsync(cancellationToken);
         
-        if (user.Count <= 0) return Result.Fail("لا يوجد مستخدمين");
-        
-        return user;    }
+        if (users.Count <= 0)
+            return Result.Fail("لا يوجد مندوبين");
+
+        return users;    }
 
     public async Task<Result<string>> CreateUserPermissionsAsync(CreateUserPermissionsRequest request, CancellationToken cancellationToken)
     {
@@ -339,7 +379,6 @@ public class UserManageRepository : IUserManagmentRepository
 
         return " تمت اضافة صلاحيات المستخدم بنجاح ";
     }
-
     public async Task<Result<string>> UpdateUserPermissionsAsync(UpdateUserPermissionsRequest request, CancellationToken cancellationToken)
     {
         var deleteOldPermissions = await _permissionsService.DeleteUserPermissions(request.UserId, cancellationToken);

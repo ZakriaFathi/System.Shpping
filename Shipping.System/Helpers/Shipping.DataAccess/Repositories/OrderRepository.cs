@@ -74,7 +74,7 @@ public class OrderRepository : IOrderRepository
         var orders = await _shippingDb.Orders
             .Where(x => x.CustomerId == request.CustomerId)
             .Include(o=> o.Branchs)
-            .ThenInclude(u => u.Customers)
+            // .ThenInclude(u => u.Customers)
             .Select(x => new GetCustomerOrderResponse
             {
                 OrderNo = x.OrderNo,
@@ -85,6 +85,11 @@ public class OrderRepository : IOrderRepository
                 SenderPhoneNo = x.SenderPhoneNo,
                 RecipientPhoneNo = x.RecipientPhoneNo,
                 Price = x.Price,
+                Representative = new RepresentativeVm
+                {
+                    Name = x.Representatives.Name,
+                    PhoneNumber = x.Representatives.PhoneNumber
+                }
             }).ToListAsync(cancellationToken);
         return orders;
         

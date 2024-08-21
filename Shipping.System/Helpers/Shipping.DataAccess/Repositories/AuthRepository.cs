@@ -18,12 +18,12 @@ namespace Shipping.DataAccess.Repositories;
 
 public class AuthRepository : IAuthRepository
 {
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ISherdUserRepository _sherdUserRepository; 
 
     private readonly JWT _jwt;
 
-    public AuthRepository(UserManager<User> userManager, IOptions<JWT> jwt, ISherdUserRepository sherdUserRepository)
+    public AuthRepository(UserManager<AppUser> userManager, IOptions<JWT> jwt, ISherdUserRepository sherdUserRepository)
     {
         _userManager = userManager;
         _sherdUserRepository = sherdUserRepository;
@@ -45,15 +45,23 @@ public class AuthRepository : IAuthRepository
         if (!identityUser.IsSuccess)
             return Result.Fail(identityUser.Errors.ToList());
 
-        await _sherdUserRepository.InsertCustomerAsync(new InsertAndUpdateUserCommnd()
+        var userProfile = await _sherdUserRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
         {
             UserId = Guid.Parse(identityUser.Value.Id),
+            UserName = identityUser.Value.UserName,
+            UserType = identityUser.Value.UserType,
             Password = request.Password,
-            UserName = request.UserName,
+        }, cancellationToken);
+        
+        if (!userProfile.IsSuccess)
+            return Result.Fail(userProfile.Errors.ToList());
+        
+       var customer = await _sherdUserRepository.InsertCustomerAsync(new InsertAndUpdateCustomerCommnd()
+        {
+            UserId = Guid.Parse(userProfile.Value),
             Address = request.Address,
             PhoneNumber = request.PhoneNumber,
             Name = request.FirstName + " " + request.LastName,
-            UserType = identityUser.Value.UserType
         }, cancellationToken);
 
         return " تمت عملية انشاء حساب ";
@@ -84,10 +92,10 @@ public class AuthRepository : IAuthRepository
         };
     }
     
-    private async Task<JwtSecurityToken> CreateJwtToken(User user)
+    private async Task<JwtSecurityToken> CreateJwtToken(AppUser appUser)
     {
-        var userClaims = await _userManager.GetClaimsAsync(user);
-        var roles = await _userManager.GetRolesAsync(user);
+        var userClaims = await _userManager.GetClaimsAsync(appUser);
+        var roles = await _userManager.GetRolesAsync(appUser);
         var roleClaims = new List<Claim>();
 
         foreach (var role in roles)
@@ -95,8 +103,8 @@ public class AuthRepository : IAuthRepository
         
         var claims = new[]
             {
-                new Claim("userId", user.Id),
-                new Claim("userName", user.UserName)
+                new Claim("userId", appUser.Id),
+                new Claim("userName", appUser.UserName)
             }
             .Union(userClaims)
             .Union(roleClaims);
