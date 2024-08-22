@@ -49,15 +49,15 @@ public class UserManagementController : ControllerBase
 
        return result.ToOperationResult();
     } 
-    [HttpGet("GetAdministrators")]  
-    public async Task<OperationResult<List<GetUsersResponse>>> GetAdministrators(CancellationToken cancellationToken)
+    [HttpGet("GetEmployees")]  
+    public async Task<OperationResult<List<GetUsersResponse>>> GetEmployees(CancellationToken cancellationToken)
     { 
        var result = await _mediator.Send(new GetEmployeesRequest(), cancellationToken);
 
        return result.ToOperationResult();
     }
-    [HttpGet("GetAdministratorsByBranchId")]  
-    public async Task<OperationResult<List<GetUsersResponse>>> GetAdministratorsByBranchId([FromQuery]GetEmployeesByBranchIdRequest request,CancellationToken cancellationToken)
+    [HttpGet("GetEmployeesByBranchId")]  
+    public async Task<OperationResult<List<GetUsersResponse>>> GetEmployeesByBranchId([FromQuery]GetEmployeesByBranchIdRequest request,CancellationToken cancellationToken)
     { 
        var result = await _mediator.Send(request, cancellationToken);
 

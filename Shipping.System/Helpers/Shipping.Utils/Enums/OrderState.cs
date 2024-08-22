@@ -15,7 +15,7 @@ namespace Shipping.Utils.Enums
         DeliveredToTheRepresentative,
         Delivered
     }
-    public enum OrderStateAdmin
+    public enum OrderStateEmployee
     {
         InTheWarehouse,
         DeliveredToTheRepresentative,

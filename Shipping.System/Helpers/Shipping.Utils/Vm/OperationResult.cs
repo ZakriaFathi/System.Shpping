@@ -10,11 +10,10 @@ public class OperationResult
         Unauthorized
     }
 
-    public OperationResult(ResultType type, List<string> messages, string traceId = null)
+    public OperationResult(ResultType type, List<string> messages)
     {
         Type = type;
         Messages = messages;
-        TraceId = traceId;
     }
 
     //public OperationResult(ResultType type, List<string> messages)
@@ -28,55 +27,55 @@ public class OperationResult
 
     public string TraceId { get; set; }
 
-    public static OperationResult Valid(List<string> messages = default, string traceId = null)
-    => new(ResultType.Success, messages ?? new List<string>(), traceId);
+    public static OperationResult Valid(List<string> messages = default)
+    => new(ResultType.Success, messages ?? new List<string>());
 
-    public static OperationResult UnValid(string traceId = null, params string[] messages)
-    => new(ResultType.Failure, messages.ToList(), traceId);
+    public static OperationResult UnValid(params string[] messages)
+    => new(ResultType.Failure, messages.ToList());
 
-    public static OperationResult UnValid(List<string> messages, ResultType resultType = ResultType.Failure, string traceId = null)
-    => new(resultType, messages, traceId);
+    public static OperationResult UnValid(List<string> messages, ResultType resultType = ResultType.Failure)
+    => new(resultType, messages);
 
-    public static OperationResult UnAuthorized(string traceId = null, params string[] messages)
-    => new(ResultType.Unauthorized, messages.ToList(), traceId);
+    public static OperationResult UnAuthorized(params string[] messages)
+    => new(ResultType.Unauthorized, messages.ToList());
 
-    public static OperationResult UnAuthorized(List<string> messages, ResultType resultType = ResultType.Unauthorized, string traceId = null)
-    => new(resultType, messages, traceId);
+    public static OperationResult UnAuthorized(List<string> messages, ResultType resultType = ResultType.Unauthorized)
+    => new(resultType, messages);
 }
 
 public class OperationResult<T> : OperationResult
 {
-    public OperationResult(ResultType type, List<string> messages, T content, string traceId = null) :
-        base(type, messages, traceId)
+    public OperationResult(ResultType type, List<string> messages, T content) :
+        base(type, messages)
     {
         Content = content;
     }
 
     public T Content { get; }
     public static OperationResult<T> Valid(T content,
-        List<string> messages = default, string traceId = null)
-    => new(ResultType.Success, messages ?? new List<string>(), content, traceId);
+        List<string> messages = default)
+    => new(ResultType.Success, messages ?? new List<string>(), content);
 
-    public static OperationResult<T> UnValid(List<string> messages, string traceId = null)
-    => new(ResultType.Failure, messages, default, traceId);
+    public static OperationResult<T> UnValid(List<string> messages)
+    => new(ResultType.Failure, messages, default);
 
-    public new static OperationResult<T> UnValid(string traceId = null, params string[] messages)
-    => new(ResultType.Failure, messages.ToList(), default, traceId);
+    public new static OperationResult<T> UnValid(params string[] messages)
+    => new(ResultType.Failure, messages.ToList(), default);
 
-    public static OperationResult<T> UnValid(ResultType resultType, string traceId = null, params string[] messages)
-    => new(resultType, messages.ToList(), default, traceId);
+    public static OperationResult<T> UnValid(ResultType resultType, params string[] messages)
+    => new(resultType, messages.ToList(), default);
 
-    public static OperationResult<T> UnAuthorized(List<string> messages, string traceId = null)
-   => new(ResultType.Unauthorized, messages, default, traceId);
+    public static OperationResult<T> UnAuthorized(List<string> messages)
+   => new(ResultType.Unauthorized, messages, default);
 
-    public new static OperationResult<T> UnAuthorized(string traceId = null, params string[] messages)
-    => new(ResultType.Unauthorized, messages.ToList(), default, traceId);
+    public new static OperationResult<T> UnAuthorized(params string[] messages)
+    => new(ResultType.Unauthorized, messages.ToList(), default);
 
-    public static OperationResult<T> UnAuthorized(ResultType resultType, string traceId = null, params string[] messages)
-    => new(resultType, messages.ToList(), default, traceId);
+    public static OperationResult<T> UnAuthorized(ResultType resultType, params string[] messages)
+    => new(resultType, messages.ToList(), default);
 
-    public new static OperationResult<T> TechError(string traceId = null, params string[] messages)
-        => new(ResultType.TechError, messages.ToList(), default, traceId);
+    public new static OperationResult<T> TechError(params string[] messages)
+        => new(ResultType.TechError, messages.ToList(), default);
 }
 
 public sealed class LocalizedMessage
