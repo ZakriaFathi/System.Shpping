@@ -24,8 +24,7 @@ public class OperationResult
 
     public ResultType Type { get; }
     public IReadOnlyList<string> Messages { get; }
-
-    public string TraceId { get; set; }
+    
 
     public static OperationResult Valid(List<string> messages = default)
     => new(ResultType.Success, messages ?? new List<string>());
