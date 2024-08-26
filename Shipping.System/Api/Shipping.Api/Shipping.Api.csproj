@@ -19,4 +19,8 @@
     <ProjectReference Include="..\..\Helpers\Shipping.DataAccess\Shipping.DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Properties\PublishProfiles\FTPProfile.pubxml" />
+  </ItemGroup>
+
 </Project>
