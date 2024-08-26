@@ -3,6 +3,7 @@ using Shipping.Application.Features.Orders.Commands.AcceptanceOrders;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByEmployee;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByRepresentative;
 using Shipping.Application.Features.Orders.Commands.CreateOrder;
+using Shipping.Application.Features.Orders.Commands.DeleteOrder;
 using Shipping.Application.Features.Orders.Commands.InsertRepresentativeInOrder;
 using Shipping.Application.Features.Orders.Commands.ToRejectOrder;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
@@ -25,5 +26,6 @@ public interface IOrderRepository
     
     Task<Result<List<GetOrderResponse>>> GetOrdersAsync(GetOrdersRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetOrderResponse>>> GetOrderByBranchIdAsync(GetOrderByBranchIdRequest request, CancellationToken cancellationToken);
+    Task<Result<string>> DeleteOrder(DeleteOrderRequest request, CancellationToken cancellationToken);
 
 }

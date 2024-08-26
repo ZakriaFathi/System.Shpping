@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Shipping.Application.Features.UserManagement.Roles;
 using Shipping.Application.Features.UserManagement.Roles.Commands.CreateRole;
+using Shipping.Application.Features.UserManagement.Roles.Commands.DeleteRole;
 using Shipping.Application.Features.UserManagement.Roles.Queries.GetAllRoles;
 using Shipping.Application.Features.UserManagement.Roles.Queries.GetRolesByUserId;
 using Shipping.Utils.Vm;
@@ -41,4 +42,11 @@ public class RoleController : ControllerBase
         
         return result.ToOperationResult();
     }
+    [HttpDelete("DeleteRole")]  
+    public async Task<OperationResult<string>> DeleteRole([FromQuery]DeleteRoleRequest request,CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(request, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
 }

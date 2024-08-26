@@ -7,6 +7,7 @@ using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
+using Shipping.Application.Features.UserManagement.Users.Commands.DeleteUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.ResetPassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUserPermissions;
@@ -255,6 +256,7 @@ public class UserManageRepository : IUserManagmentRepository
             .Include(x => x.User)
             .Select(x => new GetCustomersResponse()
             {
+                UserId = x.UserId,
                 UserName = x.User.UserName,
                 ActivateState = x.User.ActivateState,
                 UserType = x.User.UserType,
@@ -265,7 +267,7 @@ public class UserManageRepository : IUserManagmentRepository
             }).ToListAsync(cancellationToken);
 
 
-        if (users.Count <= 0) return Result.Fail("لا يوجد مستخدمين");
+        if (users.Count <= 0) return Result.Fail("لا يوجد زباين");
 
         return users;
     }
@@ -275,6 +277,7 @@ public class UserManageRepository : IUserManagmentRepository
         var users = await _shippingDb.Representatives
             .Select(x => new GetUsersResponse()
             {
+                UserId = x.UserId,
                 UserName = x.User.UserName,
                 ActivateState = x.User.ActivateState,
                 UserType = x.User.UserType,
@@ -296,6 +299,7 @@ public class UserManageRepository : IUserManagmentRepository
         var users = await _shippingDb.Employees
             .Select(x => new GetUsersResponse()
             {
+                UserId = x.UserId,
                 UserName = x.User.UserName,
                 ActivateState = x.User.ActivateState,
                 UserType = x.User.UserType,
@@ -307,7 +311,7 @@ public class UserManageRepository : IUserManagmentRepository
             }).ToListAsync(cancellationToken);
         
         if (users.Count <= 0)
-            return Result.Fail("لا يوجد مندوبين");
+            return Result.Fail("لا يوجد موظفين");
 
         return users;
     }
@@ -319,6 +323,7 @@ public class UserManageRepository : IUserManagmentRepository
             .Where(x=>x.BranchId == request.BranchId)
             .Select(x => new GetUsersResponse()
             {
+                UserId = x.UserId,
                 UserName = x.User.UserName,
                 ActivateState = x.User.ActivateState,
                 UserType = x.User.UserType,
@@ -341,6 +346,7 @@ public class UserManageRepository : IUserManagmentRepository
             .Where(x=>x.BranchId == request.BranchId)
             .Select(x => new GetUsersResponse()
             {
+                UserId = x.UserId,
                 UserName = x.User.UserName,
                 ActivateState = x.User.ActivateState,
                 UserType = x.User.UserType,
@@ -352,7 +358,7 @@ public class UserManageRepository : IUserManagmentRepository
             }).ToListAsync(cancellationToken);
         
         if (users.Count <= 0)
-            return Result.Fail("لا يوجد مندوبين");
+            return Result.Fail("لا يوجد موظفين");
 
         return users;    }
 
@@ -454,5 +460,17 @@ public class UserManageRepository : IUserManagmentRepository
             return Result.Fail(userClims.Errors.ToList());
 
         return " تمت تعديل صلاحيات المستخدم بنجاح ";
+    }
+
+    public async Task<Result<string>> DeleteUser(DeleteUserRequest request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        if(user == null)
+            return Result.Fail("هذا المستخدم غير موجود");
+        
+        _shippingDb.Users.Remove(user);
+        await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        return "تم الحذف";    
     }
 }

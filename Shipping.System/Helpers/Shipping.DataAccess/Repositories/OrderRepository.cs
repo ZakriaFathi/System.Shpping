@@ -7,6 +7,7 @@ using Shipping.Application.Features.Orders.Commands.AcceptanceOrders;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByEmployee;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByRepresentative;
 using Shipping.Application.Features.Orders.Commands.CreateOrder;
+using Shipping.Application.Features.Orders.Commands.DeleteOrder;
 using Shipping.Application.Features.Orders.Commands.InsertRepresentativeInOrder;
 using Shipping.Application.Features.Orders.Commands.ToRejectOrder;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
@@ -82,6 +83,7 @@ public class OrderRepository : IOrderRepository
             .Where(x => x.CustomerId == request.CustomerId)
             .Select(x => new GetCustomerOrderResponse
             {
+                OrderId = x.Id,
                 OrderNo = x.OrderNo,
                 OrderState = x.OrderState,
                 Dscription = x.Dscription,
@@ -106,6 +108,7 @@ public class OrderRepository : IOrderRepository
             .Where(x => x.RepresentativesId == request.RepresentativeId)
             .Select(x => new GetRepresentativeOrderResponse
             {
+                OrderId = x.Id,
                 OrderNo = x.OrderNo,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
@@ -197,6 +200,7 @@ public class OrderRepository : IOrderRepository
         var orders = await _shippingDb.Orders
             .Select(x => new GetOrderResponse
             {
+                OrderId = x.Id,
                 OrderNo = x.OrderNo,
                 OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
@@ -226,6 +230,7 @@ public class OrderRepository : IOrderRepository
             .Where(x => x.BranchId == request.BranchId)
             .Select(x => new GetOrderResponse
             {
+                OrderId = x.Id,
                 OrderNo = x.OrderNo,
                 OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
@@ -247,5 +252,16 @@ public class OrderRepository : IOrderRepository
                 }
             }).ToListAsync(cancellationToken);
         return orders;
+    }
+    public async Task<Result<string>> DeleteOrder(DeleteOrderRequest request, CancellationToken cancellationToken)
+    {
+        var order = await _shippingDb.Orders.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        if(order == null)
+            return Result.Fail("هذا الطلب غير موجود");
+        
+        _shippingDb.Orders.Remove(order);
+        await _shippingDb.SaveChangesAsync();
+        
+        return "تم الحذف";
     }
 }

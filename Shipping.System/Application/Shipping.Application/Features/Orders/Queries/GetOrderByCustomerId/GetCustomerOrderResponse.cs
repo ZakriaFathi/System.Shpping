@@ -5,6 +5,7 @@ namespace Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 
 public class GetCustomerOrderResponse
 {
+    public Guid OrderId { get; set; }
     public string OrderNo { get; set; }
     public OrderState OrderState { get; set; }
     public string Dscription { get; set; }

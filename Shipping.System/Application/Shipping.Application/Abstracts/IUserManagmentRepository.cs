@@ -3,6 +3,7 @@ using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
+using Shipping.Application.Features.UserManagement.Users.Commands.DeleteUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.ResetPassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUserPermissions;
@@ -29,4 +30,6 @@ public interface IUserManagmentRepository
     Task<Result<List<GetUsersResponse>>> GetEmployeesByBranchIdAsync(GetEmployeesByBranchIdRequest request, CancellationToken cancellationToken);
     Task<Result<string>> CreateUserPermissionsAsync(CreateUserPermissionsRequest request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateUserPermissionsAsync(UpdateUserPermissionsRequest request, CancellationToken cancellationToken);
+    Task<Result<string>> DeleteUser(DeleteUserRequest request, CancellationToken cancellationToken);
+
 }

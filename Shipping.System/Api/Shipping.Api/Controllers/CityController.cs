@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Shipping.Application.Features.Cities.Commands.CreateCity;
+using Shipping.Application.Features.Cities.Commands.DeleteCity;
 using Shipping.Application.Features.Cities.Commands.UpdateCity;
 using Shipping.Application.Features.Cities.Queries;
 using Shipping.Application.Features.Cities.Queries.GetCities;
@@ -50,4 +51,11 @@ public class CityController : ControllerBase
 
         return result.ToOperationResult();
     }
+    [HttpDelete("DeleteCity")]  
+    public async Task<OperationResult<string>> DeleteCity([FromQuery]DeleteCityRequest request,CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(request, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
 }

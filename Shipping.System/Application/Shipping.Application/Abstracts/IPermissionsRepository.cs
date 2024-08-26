@@ -1,6 +1,7 @@
 using FluentResults;
 using Shipping.Application.Features.UserManagement.Permissions;
 using Shipping.Application.Features.UserManagement.Permissions.Commands.CreatePermission;
+using Shipping.Application.Features.UserManagement.Permissions.Commands.DeletePermission;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetPermissionsByRoleId;
 
@@ -12,4 +13,5 @@ public interface IPermissionsRepository
     Task<Result<List<GetPermissionsResponse>>> GetAllPermissionsByRoleId(GetAllPermissionsByRoleIdRequest request, CancellationToken cancellationToken);
     Task<Result<string>> CreatePermission(CreatePermissionRequest request, CancellationToken cancellationToken);
     Task<Result> DeleteUserPermissions(Guid userId, CancellationToken cancellationToken);
+    Task<Result<string>> DeletePermissions(DeletePermissionRequest request, CancellationToken cancellationToken);
 }

@@ -2,6 +2,7 @@ namespace Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeI
 
 public class GetRepresentativeOrderResponse
 {
+    public Guid OrderId { get; set; }
     public string OrderNo { get; set; }
     public decimal? Price { get; set; }
     public string RecipientAddress { get; set; }

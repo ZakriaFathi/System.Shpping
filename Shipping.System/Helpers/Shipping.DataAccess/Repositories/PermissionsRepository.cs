@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.UserManagement.Permissions;
 using Shipping.Application.Features.UserManagement.Permissions.Commands.CreatePermission;
+using Shipping.Application.Features.UserManagement.Permissions.Commands.DeletePermission;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetPermissionsByRoleId;
 using Shipping.DataAccess.Persistence.DataBase;
@@ -92,5 +93,17 @@ public class PermissionsRepository  : IPermissionsRepository
 
         return Result.Ok();
         
+    }   
+    public async Task<Result<string>> DeletePermissions(DeletePermissionRequest request, CancellationToken cancellationToken)
+    {
+        var permissions = await _shippingDb.Permissions.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        
+        if (permissions is null)
+            return Result.Fail("هذه الصلاحية غير موجودة");
+
+        var result =  _shippingDb.Permissions.Remove(permissions);
+        await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        return "تم الحذف";    
     }
 }

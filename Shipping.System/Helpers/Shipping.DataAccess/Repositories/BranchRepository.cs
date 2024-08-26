@@ -2,6 +2,7 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.Branchs.Commands.CreateBranch;
+using Shipping.Application.Features.Branchs.Commands.DeleteBranch;
 using Shipping.Application.Features.Branchs.Commands.UpdateBranch;
 using Shipping.Application.Features.Branchs.Queries;
 using Shipping.Application.Features.Branchs.Queries.GetBranchById;
@@ -56,6 +57,7 @@ public class BranchRepository : IBranchRepository
         var branchs = await _shippingDb.Branchs
             .Select(x => new BranchsResopnse
             {
+                BranchId = x.Id,
                 BranchName = x.Name,
                 IsMajor = x.IsMajor
             }).ToListAsync(cancellationToken);
@@ -81,5 +83,17 @@ public class BranchRepository : IBranchRepository
             return Result.Fail<BranchsResopnse>( "الفرع غير موجود" );
         
         return branch;
+    }
+
+    public async Task<Result<string>> DeleteBranch(DeleteBranchRequest request, CancellationToken cancellationToken)
+    {
+        var branch = await _shippingDb.Branchs.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        if(branch == null)
+            return Result.Fail("هذا الفرع غير موجود");
+        
+        _shippingDb.Branchs.Remove(branch);
+        await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        return "تم الحذف";    
     }
 }

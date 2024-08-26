@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.UserManagement.Roles;
 using Shipping.Application.Features.UserManagement.Roles.Commands.CreateRole;
+using Shipping.Application.Features.UserManagement.Roles.Commands.DeleteRole;
 using Shipping.Application.Features.UserManagement.Roles.Queries.GetAllRoles;
 using Shipping.Application.Features.UserManagement.Roles.Queries.GetRolesByUserId;
 using Shipping.DataAccess.Persistence.DataBase;
@@ -55,7 +56,7 @@ public class RoleRepository : IRoleRepository
     {
         var role = await _shippingDb.Roles.FirstOrDefaultAsync(x=>x.Name == request.RoleName, cancellationToken);
         if (role != null)
-            return Result.Fail("Role already exists");
+            return Result.Fail("هذا المسؤلية غير موجود");
         
         role = new Role
         {
@@ -64,5 +65,17 @@ public class RoleRepository : IRoleRepository
         _shippingDb.Roles.Add(role);
         await _shippingDb.SaveChangesAsync(cancellationToken);
         return "تم الاضافة";
+    }
+
+    public async Task<Result<string>> DeleteRole(DeleteRoleRequest request, CancellationToken cancellationToken)
+    {
+        var role = await _shippingDb.Roles.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        if(role == null)
+            return Result.Fail("هذا المسؤلية غير موجود");
+        
+        _shippingDb.Roles.Remove(role);
+        await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        return "تم الحذف";    
     }
 }

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shipping.Application.Features.Branchs.Commands.CreateBranch;
+using Shipping.Application.Features.Branchs.Commands.DeleteBranch;
 using Shipping.Application.Features.Branchs.Commands.UpdateBranch;
 using Shipping.Application.Features.Branchs.Queries;
 using Shipping.Application.Features.Branchs.Queries.GetBranchs;
@@ -38,6 +39,13 @@ public class BranchController : ControllerBase
     public async Task<OperationResult<List<BranchsResopnse>>> GetBranchs(CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new GetBranchsRequest(), cancellationToken);
+
+        return result.ToOperationResult();
+    }  
+    [HttpDelete("DeleteBranch")]  
+    public async Task<OperationResult<string>> DeleteBranch([FromQuery]DeleteBranchRequest request,CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(request, cancellationToken);
 
         return result.ToOperationResult();
     }  

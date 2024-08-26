@@ -4,6 +4,7 @@ using Shipping.Application.Features.Orders.Commands.AcceptanceOrders;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByEmployee;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByRepresentative;
 using Shipping.Application.Features.Orders.Commands.CreateOrder;
+using Shipping.Application.Features.Orders.Commands.DeleteOrder;
 using Shipping.Application.Features.Orders.Commands.InsertRepresentativeInOrder;
 using Shipping.Application.Features.Orders.Commands.ToRejectOrder;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
@@ -92,6 +93,14 @@ public class OrderController : ControllerBase
     }  
     [HttpGet("GetOrderByBranchId")]  
     public async Task<OperationResult<List<GetOrderResponse>>> GetOrderByBranchId([FromQuery]GetOrderByBranchIdRequest request, CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(request, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
+    
+    [HttpDelete("DeleteOrder")]  
+    public async Task<OperationResult<string>> DeleteOrder([FromQuery]DeleteOrderRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);
 

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Shipping.Application.Features.UserManagement.Permissions;
 using Shipping.Application.Features.UserManagement.Permissions.Commands.CreatePermission;
+using Shipping.Application.Features.UserManagement.Permissions.Commands.DeletePermission;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetPermissionsByRoleId;
 using Shipping.Application.Features.UserManagement.Users.Queries;
@@ -43,4 +44,11 @@ public class PermissionController : ControllerBase
         
         return result.ToOperationResult();
     }
+    [HttpDelete("DeletePermission")]  
+    public async Task<OperationResult<string>> DeletePermission([FromQuery]DeletePermissionRequest request,CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(request, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
 }

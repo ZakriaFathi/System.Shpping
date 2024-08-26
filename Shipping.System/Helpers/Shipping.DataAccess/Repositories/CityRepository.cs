@@ -2,6 +2,7 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.Cities.Commands.CreateCity;
+using Shipping.Application.Features.Cities.Commands.DeleteCity;
 using Shipping.Application.Features.Cities.Commands.UpdateCity;
 using Shipping.Application.Features.Cities.Queries;
 using Shipping.Application.Features.Cities.Queries.GetCities;
@@ -22,7 +23,9 @@ public class CityRepository : ICityRepository
 
     public async Task<Result<string>> CreateCityAsync(CreateCityRequest request, CancellationToken cancellationToken)
     {
-        var city = await _shippingDb.Cities.FirstOrDefaultAsync(x => x.Name == request.Name, cancellationToken);
+        var city = await _shippingDb.Cities
+            .FirstOrDefaultAsync(x => x.Name == request.Name &&
+                                      x.BranchId == request.BranchId, cancellationToken);
         if (city != null)
             return Result.Fail("المدينة موجودة مسبقا");
         
@@ -101,4 +104,15 @@ public class CityRepository : ICityRepository
 
         return cities;
     }
+
+    public async Task<Result<string>> DeleteCity(DeleteCityRequest request, CancellationToken cancellationToken)
+    {
+        var City = await _shippingDb.Cities.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        if(City == null)
+            return Result.Fail("هذا المدينه غير موجود");
+        
+        _shippingDb.Cities.Remove(City);
+        await _shippingDb.SaveChangesAsync(cancellationToken);
+        
+        return "تم الحذف";        }
 }
