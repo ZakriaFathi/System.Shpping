@@ -7,6 +7,7 @@ using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
+using Shipping.Application.Features.UserManagement.Users.Commands.ResetPassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUserPermissions;
 using Shipping.Application.Features.UserManagement.Users.Queries;
@@ -134,6 +135,29 @@ public class UserManageRepository : IUserManagmentRepository
         
         if (!chengePassword.IsSuccess)
             return Result.Fail(chengePassword.Errors.ToList());
+        return "تم تغيير كلمة المرور بنجاح";
+    }
+
+    public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var user = await _sherdUserRepository.ResetIdentityPassword(new ResetIdentityPassword()
+        {
+            UserName = request.UserName,
+            NewPassword = request.NewPassword,
+            ConfiramNewPassword = request.ConfiramNewPassword,
+        }, cancellationToken);
+        if (!user.IsSuccess)
+            return Result.Fail(user.Errors.ToList());
+        
+        var resetPassword = await _sherdUserRepository.UpdatePasswordAsync(new UpdatePasswordCommnd()
+        {
+            UserName = request.UserName,
+            NewPassword = request.NewPassword,
+        }, cancellationToken);
+        
+        if (!resetPassword.IsSuccess)
+            return Result.Fail(resetPassword.Errors.ToList());
+        
         return "تم تغيير كلمة المرور بنجاح";
     }
 

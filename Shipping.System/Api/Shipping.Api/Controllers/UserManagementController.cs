@@ -5,6 +5,7 @@ using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
+using Shipping.Application.Features.UserManagement.Users.Commands.ResetPassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.UpdateUserPermissions;
 using Shipping.Application.Features.UserManagement.Users.Queries;
@@ -82,6 +83,13 @@ public class UserManagementController : ControllerBase
     
     [HttpPost("ChangePassword")]
     public async Task<OperationResult<string>> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(request, cancellationToken);
+        
+        return result.ToOperationResult();
+    } 
+    [HttpPost("ResetPassword")]
+    public async Task<OperationResult<string>> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
         
