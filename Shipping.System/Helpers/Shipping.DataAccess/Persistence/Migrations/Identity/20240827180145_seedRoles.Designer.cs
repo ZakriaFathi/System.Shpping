@@ -12,8 +12,8 @@ using Shipping.DataAccess.Persistence.DataBase;
 namespace Shipping.DataAccess.Persistence.Migrations.Identity
 {
     [DbContext(typeof(IdentityUsersDbContext))]
-    [Migration("20240826081840_SeedRoles")]
-    partial class SeedRoles
+    [Migration("20240827180145_seedRoles")]
+    partial class seedRoles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

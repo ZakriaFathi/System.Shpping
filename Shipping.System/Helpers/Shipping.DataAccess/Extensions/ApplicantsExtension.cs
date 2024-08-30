@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shipping.DataAccess.Persistence.DataBase;
+using Shipping.DataAccess.Persistence.Seeder;
 using Shipping.Domain.Models;
 
 namespace Shipping.DataAccess.Extensions;
@@ -11,19 +12,6 @@ public static class ApplicantsExtension
 {
     public static void AddDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-
-
-        // void SqlServerOptionsAction(SqlServerDbContextOptionsBuilder options)
-        // {
-        //     options.MigrationsAssembly("Municipal.DataAccess");
-        // }
-        //
-        // services.AddDbContext<IdentityUsersDbContext>((serviceProvider, dbContextOptionsBuilder) =>
-        // {
-        //     dbContextOptionsBuilder.UseSqlServer(serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("IdentityConnection"),
-        //         SqlServerOptionsAction);
-        //
-        // });
         var identityConnectionString = configuration.GetConnectionString("IdentityConnection");
         if (!string.IsNullOrEmpty(identityConnectionString))
             services.AddDbContextPool<IdentityUsersDbContext>(options => options.UseSqlServer(identityConnectionString)
@@ -48,6 +36,11 @@ public static class ApplicantsExtension
             services.AddDbContextPool<ShippingDbContext>(options => options.UseSqlServer(shippingConnectionString)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging());
-        
+
+        services.AddTransient<SeedService>();
+        using var serviceProvider = services.BuildServiceProvider();
+        using var appDbContext = serviceProvider.GetService<ShippingDbContext>();
+        appDbContext?.Database.Migrate();
+        serviceProvider.GetService<SeedService>()!.Seed().Wait();
     }
 }

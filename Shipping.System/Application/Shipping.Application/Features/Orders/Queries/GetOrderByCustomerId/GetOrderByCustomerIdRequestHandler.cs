@@ -4,7 +4,7 @@ using Shipping.Application.Abstracts;
 
 namespace Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 
-public class GetOrderByCustomerIdRequestHandler : IRequestHandler<GetOrderByCustomerIdRequest , Result<List<GetCustomerOrderResponse>>>
+public class GetOrderByCustomerIdRequestHandler : IRequestHandler<GetOrderByCustomerRequest , Result<List<GetCustomerOrderResponse>>>
 {
     private readonly IOrderRepository _orderRepository;
 
@@ -13,6 +13,6 @@ public class GetOrderByCustomerIdRequestHandler : IRequestHandler<GetOrderByCust
         _orderRepository = orderRepository;
     }
 
-    public async Task<Result<List<GetCustomerOrderResponse>>> Handle(GetOrderByCustomerIdRequest request, CancellationToken cancellationToken)
-        => await _orderRepository.GetOrderByCustomerIdAsync(request, cancellationToken);
+    public async Task<Result<List<GetCustomerOrderResponse>>> Handle(GetOrderByCustomerRequest request, CancellationToken cancellationToken)
+        => await _orderRepository.GetOrderByCustomerAsync(request, cancellationToken);
 }

@@ -36,14 +36,6 @@ public class PermissionController : ControllerBase
 
         return result.ToOperationResult();
     }
-    
-    [HttpPost("CreatePermission")]
-    public async Task<OperationResult<string>> CreatePermission([FromBody] CreatePermissionRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _mediator.Send(request, cancellationToken);
-        
-        return result.ToOperationResult();
-    }
     [HttpDelete("DeletePermission")]  
     public async Task<OperationResult<string>> DeletePermission([FromQuery]DeletePermissionRequest request,CancellationToken cancellationToken)
     { 

@@ -46,14 +46,14 @@ public static class ExtensionsAuthentications
                         context.HandleResponse();
                         context.Response.StatusCode = 401;
                         context.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject("401 Not authorized");
+                        var result = JsonConvert.SerializeObject("401 Unauthorized");
                         return context.Response.WriteAsync(result);
                     },
                     OnForbidden = context =>
                     {
                         context.Response.StatusCode = 403;
                         context.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject("403 Not authorized");
+                        var result = JsonConvert.SerializeObject("403 Forbidden");
                         return context.Response.WriteAsync(result);
                     },
                 };

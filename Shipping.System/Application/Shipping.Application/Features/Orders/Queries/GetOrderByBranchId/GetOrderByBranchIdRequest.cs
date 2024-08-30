@@ -1,6 +1,6 @@
 using FluentResults;
 using MediatR;
-using Shipping.Application.Features.Orders.Queries.GetOrders;
+using Shipping.Application.Features.Orders.Queries;
 
 namespace Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 

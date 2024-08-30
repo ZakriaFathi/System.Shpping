@@ -73,7 +73,6 @@ public enum AuthorizationMethod
                 options.CustomSchemaIds(type => $"{type.Name}_{Guid.NewGuid()}");
                 //options.IncludeXmlComments(xmlPath);
                 options.EnableAnnotations();
-                options.OperationFilter<AuthResponsesOperationFilter>();
                 // options.SchemaFilter<EnumSchemaFilter>();
                 options.OperationFilter<AcceptLanguageHeaderFilter>();
 
@@ -228,17 +227,7 @@ public enum AuthorizationMethod
         }
     }
 
-    public class AuthResponsesOperationFilter : IOperationFilter
-    {
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        {
-            var authAttributes = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-                .Union(context.MethodInfo.GetCustomAttributes(true))
-                .OfType<AuthorizeAttribute>();
 
-            if (authAttributes.Any()) operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
-        }
-    }
 
     public class SwaggerOptions
     {

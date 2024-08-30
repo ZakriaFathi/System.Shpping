@@ -1,4 +1,4 @@
-using Shipping.Application.Features.Orders.Queries.GetOrders;
+using Shipping.Application.Features.Orders.Queries;
 using Shipping.Utils.Enums;
 
 namespace Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;

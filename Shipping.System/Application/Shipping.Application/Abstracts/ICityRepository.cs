@@ -12,8 +12,10 @@ public interface ICityRepository
 {
     Task<Result<string>> CreateCityAsync(CreateCityRequest request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateCityAsync(UpdateCityRequest request, CancellationToken cancellationToken);
-    Task<Result<List<CitiesResopnse>>> GetCitiesAsync(GetCitiesRequest request, CancellationToken cancellationToken);
+    // Task<Result<List<CitiesResopnse>>> GetCitiesAsync(GetCitiesRequest request, CancellationToken cancellationToken);
     Task<Result<List<CitiesResopnse>>> GetCitiesByBranchIdAsync(GetCitiesByBranchIdRequest request, CancellationToken cancellationToken);
+
+    Task<Result<List<CitiesResopnse>>> GetCitiesAsync(GetCitiesRequest request, CancellationToken cancellationToken);
     Task<Result<string>> DeleteCity(DeleteCityRequest request, CancellationToken cancellationToken);
 
 

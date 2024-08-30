@@ -12,7 +12,7 @@ using Shipping.DataAccess.Persistence.DataBase;
 namespace Shipping.DataAccess.Persistence.Migrations.Shipping
 {
     [DbContext(typeof(ShippingDbContext))]
-    [Migration("20240821200032_ShippingMigrations")]
+    [Migration("20240827180425_ShippingMigrations")]
     partial class ShippingMigrations
     {
         /// <inheritdoc />

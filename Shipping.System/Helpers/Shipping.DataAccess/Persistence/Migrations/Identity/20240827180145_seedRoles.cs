@@ -6,26 +6,31 @@ using Shipping.Utils.Enums;
 namespace Shipping.DataAccess.Persistence.Migrations.Identity
 {
     /// <inheritdoc />
-    public partial class SeedRoles : Migration
+    public partial class seedRoles : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
-                values: new object[] { Guid.NewGuid().ToString(), UserType.User.ToString("G"), UserType.User.ToString("G").ToUpper(), Guid.NewGuid().ToString() }
-            ); 
+               table: "AspNetRoles",
+               columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
+               values: new object[] { Guid.NewGuid().ToString(), UserType.User.ToString("G"), UserType.User.ToString("G").ToUpper(), Guid.NewGuid().ToString() }
+           );
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
                 values: new object[] { Guid.NewGuid().ToString(), UserType.Representative.ToString("G"), UserType.Representative.ToString("G").ToUpper(), Guid.NewGuid().ToString() }
-            );  
+            );
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
                 values: new object[] { Guid.NewGuid().ToString(), UserType.Employee.ToString("G"), UserType.Employee.ToString("G").ToUpper(), Guid.NewGuid().ToString() }
             );
+            migrationBuilder.InsertData(
+               table: "AspNetRoles",
+               columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
+               values: new object[] { Guid.NewGuid().ToString(), UserType.Owner.ToString("G"), UserType.Owner.ToString("G").ToUpper(), Guid.NewGuid().ToString() }
+           );
         }
 
         /// <inheritdoc />

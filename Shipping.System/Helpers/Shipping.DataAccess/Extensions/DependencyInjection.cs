@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
+using Shipping.DataAccess.Persistence.Seeder;
 using Shipping.DataAccess.Repositories;
 using Shipping.Utils.Options;
 
@@ -24,7 +25,8 @@ public static class DependencyInjection
         });
         
         services.AddDbContext(configuration);
-        // services.AddAuthentications(configuration);
+        services.AddAuthentications(configuration);
+        services.AddHttpContextAccessor();
         
         services.AddTransient<IAuthRepository, AuthRepository>();
         services.AddTransient<IUserManagmentRepository, UserManageRepository>();
@@ -34,6 +36,7 @@ public static class DependencyInjection
         services.AddTransient<ICityRepository, CityRepository>();
         services.AddTransient<IBranchRepository, BranchRepository>();
         services.AddTransient<IOrderRepository, OrderRepository>();
+        services.AddTransient<ISherdOrderRepository, SherdOrderRepository>();
 
         
     }

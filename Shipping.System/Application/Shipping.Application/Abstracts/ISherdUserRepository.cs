@@ -17,7 +17,6 @@ public interface ISherdUserRepository
     Task<Result<AppUser>> SingUp(SingUpCommnd request, CancellationToken cancellationToken);
     Task<Result<AppUser>> InsertIdentityUser(InsertAndUpdateIdentityUser command, CancellationToken cancellationToken);
     Task<Result<string>> UpdateIdentityCustomer(InsertAndUpdateIdentityUser command, CancellationToken cancellationToken);
-    Task<Result<string>> ChangeIdentityPassword(ChangeIdentityPassword command, CancellationToken cancellationToken);
     Task<Result<string>> ChangeIdentityActivation(ChangeIdentityActivation command, CancellationToken cancellationToken);
     Task<Result<string>> InsertIdentityUserClaims(InsertAndUpdateIdentityClaims command, CancellationToken cancellationToken);
     Task<Result<string>> UpdateIdentityUserClaims(InsertAndUpdateIdentityClaims command, CancellationToken cancellationToken);
@@ -29,7 +28,6 @@ public interface ISherdUserRepository
     Task<Result<string>> InsertRepresentativeAsync(InsertAndUpdateRepresentativeCommnd request, CancellationToken cancellationToken);
     Task<Result<string>> InsertCustomerAsync(InsertAndUpdateCustomerCommnd request, CancellationToken cancellationToken);
     
-    Task<Result<string>> ChangePasswordUserAsync(ChangePasswordCommand request, CancellationToken cancellationToken);
     Task<Result<string>> ChangeUserActivationAsync(ChangeUserActivationCommnd request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateUserAsync(InsertAndUpdateUserCommnd request, CancellationToken cancellationToken);
     Task<Result<string>> UpdatePasswordAsync(UpdatePasswordCommnd request, CancellationToken cancellationToken);

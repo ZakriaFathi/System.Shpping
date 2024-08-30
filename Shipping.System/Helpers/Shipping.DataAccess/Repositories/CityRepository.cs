@@ -23,9 +23,12 @@ public class CityRepository : ICityRepository
 
     public async Task<Result<string>> CreateCityAsync(CreateCityRequest request, CancellationToken cancellationToken)
     {
+        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        
         var city = await _shippingDb.Cities
-            .FirstOrDefaultAsync(x => x.Name == request.Name &&
-                                      x.BranchId == request.BranchId, cancellationToken);
+            .FirstOrDefaultAsync(x => employee != null &&
+                                      x.Name == request.Name &&
+                                      x.BranchId == employee.BranchId, cancellationToken);
         if (city != null)
             return Result.Fail("المدينة موجودة مسبقا");
         
@@ -33,7 +36,7 @@ public class CityRepository : ICityRepository
         {
             Name = request.Name,
             Price = request.Price,
-            BranchId = request.BranchId
+            BranchId = employee.BranchId.Value
         };
         
         await _shippingDb.Cities.AddAsync(newCity, cancellationToken);
@@ -42,7 +45,6 @@ public class CityRepository : ICityRepository
         return Result.Ok("تمت عملية الاضافة بنجاح");
         
     }
-
     public async Task<Result<string>> UpdateCityAsync(UpdateCityRequest request, CancellationToken cancellationToken)
     {
         var city = await _shippingDb.Cities.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
@@ -57,35 +59,40 @@ public class CityRepository : ICityRepository
         return Result.Ok("تمت عملية التعديل بنجاح");
         
     }
-
-    public async Task<Result<List<CitiesResopnse>>> GetCitiesAsync(GetCitiesRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<CitiesResopnse>>> GetCitiesByBranchIdAsync(GetCitiesByBranchIdRequest request, CancellationToken cancellationToken)
     {
+        if (request.BranchId == Guid.Empty)
+        {
+            return await GetCities(cancellationToken);
+        }
+
         var cities = await _shippingDb.Cities
-            .Include(p=>p.Branch)
+            .Include(p => p.Branch)
+            .Where(x => x.BranchId == request.BranchId)
             .GroupBy(u => u.Branch)
             .Select(g => new CitiesResopnse()
             {
-                BranchId = g.First(x=>x.BranchId == x.Branch.Id).Branch.Id,
+                BranchId = g.First(x => x.BranchId == x.Branch.Id).Branch.Id,
                 Cities = g.Select(x => new Cities
                 {
                     CityId = x.Id,
                     Name = x.Name,
                     Price = x.Price
-            }).ToList()
+                }).ToList()
             }).ToListAsync(cancellationToken);
-        
-         
         if (cities.Count <= 0)
-            return Result.Fail<List<CitiesResopnse>>( "لا يوجد مدن" );
+            return Result.Fail<List<CitiesResopnse>>("لا يوجد مدن");
 
         return cities;
-    }
 
-    public async Task<Result<List<CitiesResopnse>>> GetCitiesByBranchIdAsync(GetCitiesByBranchIdRequest request, CancellationToken cancellationToken)
+    }
+    public async Task<Result<List<CitiesResopnse>>> GetCitiesAsync(GetCitiesRequest request, CancellationToken cancellationToken)
     {
+        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        
         var cities = await _shippingDb.Cities
             .Include(p=>p.Branch)
-            .Where(x => x.BranchId == request.BranchId)
+            .Where(x => employee != null && x.BranchId == employee.BranchId)
             .GroupBy(u => u.Branch)
             .Select(g => new CitiesResopnse()
             {
@@ -104,7 +111,6 @@ public class CityRepository : ICityRepository
 
         return cities;
     }
-
     public async Task<Result<string>> DeleteCity(DeleteCityRequest request, CancellationToken cancellationToken)
     {
         var City = await _shippingDb.Cities.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
@@ -114,5 +120,28 @@ public class CityRepository : ICityRepository
         _shippingDb.Cities.Remove(City);
         await _shippingDb.SaveChangesAsync(cancellationToken);
         
-        return "تم الحذف";        }
+        return "تم الحذف";
+    }
+    private async Task<Result<List<CitiesResopnse>>> GetCities(CancellationToken cancellationToken)
+    {
+        var cities = await _shippingDb.Cities
+            .Include(p=>p.Branch)
+            .GroupBy(u => u.Branch)
+            .Select(g => new CitiesResopnse()
+            {
+                BranchId = g.First(x=>x.BranchId == x.Branch.Id).Branch.Id,
+                Cities = g.Select(x => new Cities
+                {
+                    CityId = x.Id,
+                    Name = x.Name,
+                    Price = x.Price
+                }).ToList()
+            }).ToListAsync(cancellationToken);
+        
+         
+        if (cities.Count <= 0)
+            return Result.Fail<List<CitiesResopnse>>( "لا يوجد مدن" );
+
+        return cities;
+    }
 }

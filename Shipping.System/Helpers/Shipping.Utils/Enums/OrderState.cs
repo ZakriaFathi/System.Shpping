@@ -8,16 +8,23 @@ namespace Shipping.Utils.Enums
 {
     public enum OrderState
     {
-        Canceled = 0,
-        New = 1,
-        Pending,
+        Pending = 1,
         InTheWarehouse,
         DeliveredToTheRepresentative,
-        Delivered
+        Delivered,
+        Returning,
+        ReturnInTheWarehouse,
+        ReturnInCustomer,
     }
     public enum OrderStateEmployee
     {
-        InTheWarehouse,
-        DeliveredToTheRepresentative,
+        DeliveredToTheRepresentative = 1,
+        ReturnInTheWarehouse,
+        ReturnInCustomer,
+    }  
+    public enum OrderStateRepresentative
+    {
+        Delivered = 1,
+        Returning,
     }
 }

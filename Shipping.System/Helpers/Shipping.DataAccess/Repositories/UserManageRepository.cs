@@ -3,7 +3,6 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
-using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
@@ -47,6 +46,7 @@ public class UserManageRepository : IUserManagmentRepository
         
         var types = request.UserType switch
         {
+            UserTypeVm.Owner => UserType.Owner,
             UserTypeVm.Employee => UserType.Employee,
             UserTypeVm.Representative => UserType.Representative,
             _ => UserType.User
@@ -98,6 +98,15 @@ public class UserManageRepository : IUserManagmentRepository
                 Name = request.FirstName + " " + request.LastName,
                 BranchId = request.BranchId
             }, cancellationToken),
+            
+            UserType.Owner => await _sherdUserRepository.InsertEmployeeAsync(new InsertAndUpdateEmployeeCommnd()
+            {
+                UserId = Guid.Parse(identityUser.Value.Id),
+                Address = identityUser.Value.Address,
+                PhoneNumber = identityUser.Value.PhoneNumber,
+                Name = request.FirstName + " " + request.LastName,
+                BranchId = request.BranchId
+            }, cancellationToken),
             _ => Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" })
         };
 
@@ -107,38 +116,7 @@ public class UserManageRepository : IUserManagmentRepository
         return "تمت عملية اضافة المستخدم بنجاح ";
         
     }
-
-    public async Task<Result<string>> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken cancellationToken)
-    {
-        var user = await _sherdUserRepository.GetIdentityUserById(request.UserId, cancellationToken);
-        
-        if (!user.IsSuccess)
-            return Result.Fail(user.Errors.ToList());
-        
-        var userPassword = await _sherdUserRepository.ChangeIdentityPassword(new ChangeIdentityPassword()
-        {
-            UserId = user.Value.Id,
-            NewPassword = request.NewPassword,
-            OldPassword = request.OldPassword,
-            ConfirmNewPassWord = request.ConfirmNewPassWord
-        }, cancellationToken);
-        if (!userPassword.IsSuccess)
-            return Result.Fail(userPassword.Errors.ToList());
-
-        var chengePassword = await _sherdUserRepository.ChangePasswordUserAsync(
-            new ChangePasswordCommand()
-            {
-                UserId = Guid.Parse(user.Value.Id),
-                NewPassWord = request.NewPassword,
-                OldPassWord = request.OldPassword,
-                ConfirmNewPassWord = request.ConfirmNewPassWord
-            }, cancellationToken);
-        
-        if (!chengePassword.IsSuccess)
-            return Result.Fail(chengePassword.Errors.ToList());
-        return "تم تغيير كلمة المرور بنجاح";
-    }
-
+    
     public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
     {
         var user = await _sherdUserRepository.ResetIdentityPassword(new ResetIdentityPassword()
@@ -239,6 +217,14 @@ public class UserManageRepository : IUserManagmentRepository
                     PhoneNumber = request.PhoneNumber,
                     Address = request.Address,
                     Name = request.FristName + " " + request.LastName
+                }, cancellationToken), 
+            UserType.Owner => await _sherdUserRepository.UpdateEmployeeAsync(
+                new InsertAndUpdateEmployeeCommnd()
+                {
+                    UserId = Guid.Parse(updateUser.Value),
+                    PhoneNumber = request.PhoneNumber,
+                    Address = request.Address,
+                    Name = request.FristName + " " + request.LastName
                 }, cancellationToken),
         };
         if (!update.IsSuccess)
@@ -274,7 +260,10 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<List<GetUsersResponse>>> GetRepresentativesAsync(GetRepresentativesRequest request, CancellationToken cancellationToken)
     {
+        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+
         var users = await _shippingDb.Representatives
+            .Where(x=>employee != null && x.BranchId == employee.BranchId)
             .Select(x => new GetUsersResponse()
             {
                 UserId = x.UserId,
@@ -296,7 +285,10 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<List<GetUsersResponse>>> GetEmployeesAsync(GetEmployeesRequest request, CancellationToken cancellationToken)
     {
+        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+
         var users = await _shippingDb.Employees
+            .Where(x=>employee != null && x.BranchId == employee.BranchId)
             .Select(x => new GetUsersResponse()
             {
                 UserId = x.UserId,
@@ -319,6 +311,9 @@ public class UserManageRepository : IUserManagmentRepository
     public async Task<Result<List<GetUsersResponse>>> GetRepresentativesByBranchIdAsync(GetRepresentativesByBranchIdRequest request,
         CancellationToken cancellationToken)
     {
+        if (request.BranchId == Guid.Empty)
+            return await GetRepresentatives(cancellationToken);
+        
         var users = await _shippingDb.Representatives
             .Where(x=>x.BranchId == request.BranchId)
             .Select(x => new GetUsersResponse()
@@ -342,6 +337,9 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<List<GetUsersResponse>>> GetEmployeesByBranchIdAsync(GetEmployeesByBranchIdRequest request, CancellationToken cancellationToken)
     {
+        if (request.BranchId == Guid.Empty)
+            return await GetEmployees(cancellationToken);
+        
         var users = await _shippingDb.Employees
             .Where(x=>x.BranchId == request.BranchId)
             .Select(x => new GetUsersResponse()
@@ -379,7 +377,7 @@ public class UserManageRepository : IUserManagmentRepository
                 request.Permissions.ForEach(y =>
                 {
                     if (y.ToString() == x.PermissionId.ToString())
-                        claim.Add(new Claim(x.PermissionName, t.RoleName));
+                        claim.Add(new Claim(t.RoleName, x.PermissionName));
                 });
             });
         }
@@ -431,7 +429,7 @@ public class UserManageRepository : IUserManagmentRepository
                 request.Permissions.ForEach(y =>
                 {
                     if (y.ToString() == x.PermissionId.ToString())
-                        claim.Add(new Claim(x.PermissionName, t.RoleName));
+                        claim.Add(new Claim(t.RoleName, x.PermissionName));
                 });
             });
         }
@@ -472,5 +470,49 @@ public class UserManageRepository : IUserManagmentRepository
         await _shippingDb.SaveChangesAsync(cancellationToken);
         
         return "تم الحذف";    
+    }
+    
+    private async Task<Result<List<GetUsersResponse>>> GetRepresentatives(CancellationToken cancellationToken)
+    {
+        var users = await _shippingDb.Representatives
+            .Select(x => new GetUsersResponse()
+            {
+                UserId = x.UserId,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
+                Address = x.Address,
+                PhoneNumber = x.PhoneNumber,
+                Name = x.Name,
+                Password = x.User.Password,
+                BranchName = x.Branch.Name
+            }).ToListAsync(cancellationToken);
+        
+        if (users.Count <= 0)
+            return Result.Fail("لا يوجد مندوبين");
+
+        return users;
+    }
+    
+    private async Task<Result<List<GetUsersResponse>>> GetEmployees(CancellationToken cancellationToken)
+    {
+        var users = await _shippingDb.Employees
+            .Select(x => new GetUsersResponse()
+            {
+                UserId = x.UserId,
+                UserName = x.User.UserName,
+                ActivateState = x.User.ActivateState,
+                UserType = x.User.UserType,
+                Address = x.Address,
+                PhoneNumber = x.PhoneNumber,
+                Name = x.Name,
+                Password = x.User.Password,
+                BranchName = x.Branch.Name
+            }).ToListAsync(cancellationToken);
+        
+        if (users.Count <= 0)
+            return Result.Fail("لا يوجد موظفين");
+
+        return users;
     }
 }

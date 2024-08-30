@@ -34,14 +34,6 @@ public class RoleController : ControllerBase
 
         return result.ToOperationResult();
     }
-    
-    [HttpPost("CreateRole")]
-    public async Task<OperationResult<string>> CreateRole([FromBody] CreateRoleRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _mediator.Send(request, cancellationToken);
-        
-        return result.ToOperationResult();
-    }
     [HttpDelete("DeleteRole")]  
     public async Task<OperationResult<string>> DeleteRole([FromQuery]DeleteRoleRequest request,CancellationToken cancellationToken)
     { 

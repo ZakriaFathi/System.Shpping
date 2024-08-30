@@ -1,7 +1,6 @@
 using FluentResults;
 using MediatR;
 using Shipping.Application.Abstracts;
-using Shipping.Application.Features.Cities.Queries.GetCities;
 
 namespace Shipping.Application.Features.Cities.Queries.GetCitiesByBranchId;
 

@@ -1,6 +1,6 @@
 using Shipping.Utils.Enums;
 
-namespace Shipping.Application.Features.Orders.Queries.GetOrders;
+namespace Shipping.Application.Features.Orders.Queries;
 
 public class GetOrderResponse
 {

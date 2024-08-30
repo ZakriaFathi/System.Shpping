@@ -12,7 +12,7 @@ using Shipping.DataAccess.Persistence.DataBase;
 namespace Shipping.DataAccess.Persistence.Migrations.Identity
 {
     [DbContext(typeof(IdentityUsersDbContext))]
-    [Migration("20240821190725_UserMigrations")]
+    [Migration("20240827180122_UserMigrations")]
     partial class UserMigrations
     {
         /// <inheritdoc />

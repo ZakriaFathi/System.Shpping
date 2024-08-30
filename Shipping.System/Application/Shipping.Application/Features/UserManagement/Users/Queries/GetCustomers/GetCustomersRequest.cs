@@ -5,5 +5,5 @@ namespace Shipping.Application.Features.UserManagement.Users.Queries.GetCustomer
 
 public class GetCustomersRequest : IRequest<Result<List<GetCustomersResponse>>>
 {
-    
+
 }

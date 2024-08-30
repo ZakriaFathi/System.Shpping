@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shipping.Api.Shared;
 using Shipping.Application.Features.Cities.Commands.CreateCity;
 using Shipping.Application.Features.Cities.Commands.DeleteCity;
 using Shipping.Application.Features.Cities.Commands.UpdateCity;
@@ -10,9 +12,8 @@ using Shipping.Utils.Vm;
 
 namespace Shipping.Api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class CityController : ControllerBase
+
+public class CityController : BaseController
 {
     private readonly IMediator _mediator;
 
@@ -22,9 +23,15 @@ public class CityController : ControllerBase
     }
     
     [HttpPost("CreateCity")]
-    public async Task<OperationResult<string>> CreateCity([FromBody] CreateCityRequest request, CancellationToken cancellationToken)
+    [Authorize(Roles = "Employee")]
+    public async Task<OperationResult<string>> CreateCity([FromQuery] string name,[FromQuery] decimal price, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(request, cancellationToken);
+        var result = await _mediator.Send(new CreateCityRequest()
+        {
+            Name = name,
+            Price = price,
+            UserId = GetUserId(),
+        }, cancellationToken);
 
         return result.ToOperationResult();
     }
@@ -36,18 +43,21 @@ public class CityController : ControllerBase
         var result = await _mediator.Send(request, cancellationToken);
         return result.ToOperationResult();
     }
-    [HttpGet("GetCities")]  
-    public async Task<OperationResult<List<CitiesResopnse>>> GetCities(CancellationToken cancellationToken)
-    { 
-        var result = await _mediator.Send(new GetCitiesRequest(), cancellationToken);
-
-        return result.ToOperationResult();
-    } 
-    
     [HttpGet("GetCitiesByBranchId")]  
     public async Task<OperationResult<List<CitiesResopnse>>> GetCitiesByBranchId([FromQuery]GetCitiesByBranchIdRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
+    [HttpGet("GetCities")]
+    [Authorize(Roles = "Employee")]
+    public async Task<OperationResult<List<CitiesResopnse>>> GetCities(CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(new GetCitiesRequest()
+        {
+            UserId = GetUserId()
+        }, cancellationToken);
 
         return result.ToOperationResult();
     }
@@ -58,4 +68,6 @@ public class CityController : ControllerBase
 
         return result.ToOperationResult();
     } 
+    
+    
 }
