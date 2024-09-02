@@ -4,30 +4,31 @@ namespace Shipping.Utils.Enums;
 
 public enum RoleName
 {
-    [Permission(PermissionNames.GetCustomers, PermissionNames.GetRepresentatives,
-        PermissionNames.GetRepresentativesByBranchId, PermissionNames.GetEmployees,
-        PermissionNames.GetEmployeesByBranchId, PermissionNames.CreateUser,
-        PermissionNames.ChangeUserActivation, PermissionNames.ResetPassword,
-        PermissionNames.CreateUserPermissions, PermissionNames.UpdateUserPermissions,
-        PermissionNames.UpdateUser, PermissionNames.DeleteUser)]
+    [Permission(PermissionNames.View,PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]
     UserManagement,
     
+    [Permission(PermissionNames.View,PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]
+    BranchManagement,
     
-    [Permission(PermissionNames.CreateOrder, PermissionNames.AcceptanceOrder, PermissionNames.ChangeOrderStateByEmployee,
-        PermissionNames.InsertRepresentativeInOrde, PermissionNames.ChangeOrderStateByRepresentative,
-        PermissionNames.GetOrderByCustomer, PermissionNames.GetRepresentatives, PermissionNames.GetOrderByRepresentative,
-        PermissionNames.GetOrderByBranchId, PermissionNames.ShearchOrder,
-        PermissionNames.DeleteOrder)]
-    OrderManagement,
-    
-    [Permission(PermissionNames.CreateCity, PermissionNames.UpdateCity, PermissionNames.GetCitiesByBranchId,
-        PermissionNames.GetCities,PermissionNames.DeleteCity)]
+    [Permission(PermissionNames.View,PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]
     CityManagement,
     
-    [Permission(PermissionNames.GetAllPermissions, PermissionNames.GetAllPermissionsByRoleId, PermissionNames.DeletePermission)]
+    [Permission(PermissionNames.View, PermissionNames.Edit ,PermissionNames.Delete)]
+    OrderManagement,
+    
+    [Permission(PermissionNames.View, PermissionNames.Delete)]
     PermissionManagement,
     
-    
-    [Permission(PermissionNames.GetAllRoles, PermissionNames.GetRolesByUserId, PermissionNames.DeleteRole)]
+    [Permission(PermissionNames.View, PermissionNames.Delete)]
     RoleManagement
+}
+
+public enum RoleType
+{
+    UserManagement,
+    OrderManagement, 
+    CityManagement,
+    PermissionManagement,
+    RoleManagement,
+    BranchManagement
 }

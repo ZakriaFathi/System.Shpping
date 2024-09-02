@@ -19,20 +19,21 @@ namespace Shipping.DataAccess.Repositories;
 public class AuthRepository : IAuthRepository
 {
     private readonly UserManager<AppUser> _userManager;
-    private readonly ISherdUserRepository _sherdUserRepository; 
-
+    private readonly IIdentityRepository _identityRepository; 
+    private readonly IUserRepository _userRepository;
     private readonly JWT _jwt;
 
-    public AuthRepository(UserManager<AppUser> userManager, IOptions<JWT> jwt, ISherdUserRepository sherdUserRepository)
+    public AuthRepository(UserManager<AppUser> userManager, IOptions<JWT> jwt, IIdentityRepository identityRepository, IUserRepository userRepository)
     {
         _userManager = userManager;
-        _sherdUserRepository = sherdUserRepository;
+        _identityRepository = identityRepository;
+        _userRepository = userRepository;
         _jwt = jwt.Value;
     }
 
     public async Task<Result<string>> SingUp(SingUpRequest request, CancellationToken cancellationToken)
     {
-        var identityUser = await _sherdUserRepository.SingUp(new SingUpCommnd()
+        var identityUser = await _identityRepository.SingUp(new SingUpCommnd()
         {
             LastName = request.LastName,
             FirstName = request.FirstName,
@@ -45,7 +46,7 @@ public class AuthRepository : IAuthRepository
         if (!identityUser.IsSuccess)
             return Result.Fail(identityUser.Errors.ToList());
 
-        var userProfile = await _sherdUserRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
+        var userProfile = await _userRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
         {
             UserId = Guid.Parse(identityUser.Value.Id),
             UserName = identityUser.Value.UserName,
@@ -55,8 +56,8 @@ public class AuthRepository : IAuthRepository
         
         if (!userProfile.IsSuccess)
             return Result.Fail(userProfile.Errors.ToList());
-        
-       var customer = await _sherdUserRepository.InsertCustomerAsync(new InsertAndUpdateCustomerCommnd()
+
+        var customer = await _userRepository.InsertCustomerAsync(new InsertAndUpdateCustomerCommnd()
         {
             UserId = Guid.Parse(userProfile.Value),
             Address = request.Address,

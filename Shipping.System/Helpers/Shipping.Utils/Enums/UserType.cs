@@ -15,8 +15,7 @@ namespace Shipping.Utils.Enums
     }
     public enum UserTypeVm
     {
-        Owner = 1,
-        Employee ,
+        Employee = 1,
         Representative,
     }
 }

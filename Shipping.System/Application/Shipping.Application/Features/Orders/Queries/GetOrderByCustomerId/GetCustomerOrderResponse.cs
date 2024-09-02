@@ -14,5 +14,6 @@ public class GetCustomerOrderResponse
     public string SenderPhoneNo { get; set; }
     public string RecipientPhoneNo { get; set; }
     public decimal? Price { get; set; }
+    public decimal? OrderPrice { get; set; }
     public RepresentativeVm Representative { get; set; }
 }

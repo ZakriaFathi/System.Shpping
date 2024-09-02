@@ -1,4 +1,5 @@
 using FluentResults;
+using Shipping.Application.Features.Auth.Commands.UpdateCustomer;
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
@@ -21,6 +22,7 @@ public interface IUserManagmentRepository
     Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken);
     Task<Result<string>> ChangeUserActivationAsync(ChangeUserActivationRequest request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateUserAsync(UpdateUserRequest request, CancellationToken cancellationToken);
+    Task<Result<string>> UpdateCustomerAsync(UpdateCustomerRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetCustomersResponse>>> GetCustomersAsync(GetCustomersRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetUsersResponse>>> GetRepresentativesAsync(GetRepresentativesRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetUsersResponse>>> GetEmployeesAsync(GetEmployeesRequest request, CancellationToken cancellationToken);

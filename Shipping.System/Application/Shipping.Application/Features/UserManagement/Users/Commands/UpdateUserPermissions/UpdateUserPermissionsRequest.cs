@@ -6,5 +6,5 @@ namespace Shipping.Application.Features.UserManagement.Users.Commands.UpdateUser
 public class UpdateUserPermissionsRequest : IRequest<Result<string>>
 {
     public Guid UserId { get; set; }
-    public List<string> Permissions { get; set; } = new();
+    public List<Guid> Permissions { get; set; } = new();
 }

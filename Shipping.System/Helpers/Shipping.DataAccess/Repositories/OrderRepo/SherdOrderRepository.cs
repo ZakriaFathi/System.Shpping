@@ -8,7 +8,7 @@ using Shipping.Application.Models;
 using Shipping.DataAccess.Persistence.DataBase;
 using Shipping.Utils.Enums;
 
-namespace Shipping.DataAccess.Repositories;
+namespace Shipping.DataAccess.Repositories.OrderRepo;
 
 public class SherdOrderRepository : ISherdOrderRepository
 {
@@ -38,6 +38,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -103,6 +104,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -141,6 +143,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -176,6 +179,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -213,6 +217,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -249,6 +254,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -287,6 +293,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -326,6 +333,7 @@ public class SherdOrderRepository : ISherdOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,

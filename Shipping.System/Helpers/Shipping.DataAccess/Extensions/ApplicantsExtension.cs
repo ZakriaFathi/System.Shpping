@@ -37,10 +37,6 @@ public static class ApplicantsExtension
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging());
 
-        services.AddTransient<SeedService>();
-        using var serviceProvider = services.BuildServiceProvider();
-        using var appDbContext = serviceProvider.GetService<ShippingDbContext>();
-        appDbContext?.Database.Migrate();
-        serviceProvider.GetService<SeedService>()!.Seed().Wait();
+
     }
 }

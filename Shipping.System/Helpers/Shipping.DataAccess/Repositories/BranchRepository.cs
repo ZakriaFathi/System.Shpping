@@ -36,7 +36,8 @@ public class BranchRepository : IBranchRepository
         await _shippingDb.Branchs.AddAsync(newBranch, cancellationToken);
         await _shippingDb.SaveChangesAsync(cancellationToken);
         
-        return Result.Ok("تمت عملية الاضافة بنجاح");    }
+        return newBranch.Id.ToString();
+    }
 
     public async Task<Result<string>> UpdateBranchAsync(UpdateBranchRequest request, CancellationToken cancellationToken)
     {

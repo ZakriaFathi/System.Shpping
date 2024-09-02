@@ -1,9 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
+using Shipping.DataAccess.Persistence.DataBase;
 using Shipping.DataAccess.Persistence.Seeder;
 using Shipping.DataAccess.Repositories;
+using Shipping.DataAccess.Repositories.OrderRepo;
+using Shipping.DataAccess.Repositories.UserManageRepo;
 using Shipping.Utils.Options;
 
 namespace Shipping.DataAccess.Extensions;
@@ -30,14 +34,20 @@ public static class DependencyInjection
         
         services.AddTransient<IAuthRepository, AuthRepository>();
         services.AddTransient<IUserManagmentRepository, UserManageRepository>();
-        services.AddTransient<ISherdUserRepository, SherdUserRepository>();
         services.AddTransient<IPermissionsRepository, PermissionsRepository>();
         services.AddTransient<IRoleRepository, RoleRepository>();
         services.AddTransient<ICityRepository, CityRepository>();
         services.AddTransient<IBranchRepository, BranchRepository>();
         services.AddTransient<IOrderRepository, OrderRepository>();
         services.AddTransient<ISherdOrderRepository, SherdOrderRepository>();
+        services.AddTransient<IIdentityRepository, IdentityRepository>();
+        services.AddTransient<IUserRepository, UserRepository>();
 
-        
+        services.AddTransient<SeedService>();
+        using var serviceProvider = services.BuildServiceProvider();
+        using var appDbContext = serviceProvider.GetService<ShippingDbContext>();
+        appDbContext?.Database.Migrate();
+        serviceProvider.GetService<SeedService>()!.Seed().Wait();
+
     }
 }

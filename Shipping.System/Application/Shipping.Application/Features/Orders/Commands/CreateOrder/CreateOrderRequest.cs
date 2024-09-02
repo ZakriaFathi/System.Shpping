@@ -9,7 +9,7 @@ public class CreateOrderRequest : IRequest<Result<string>>
     public string Dscription { get; set; }
     public Guid CityId { get; set; }
     public int? CountOfItems { get; set; }
-    public string SenderPhoneNo { get; set; }
     public string RecipientPhoneNo { get; set; }
+    public decimal OrderPrice { get; set; }
     public Guid BranchId { get; set; }
 }

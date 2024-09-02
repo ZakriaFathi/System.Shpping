@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shipping.Application.Features.UserManagement.Roles;
 using Shipping.Application.Features.UserManagement.Roles.Commands.CreateRole;
@@ -21,6 +22,7 @@ public class RoleController : ControllerBase
     }
     
     [HttpGet("GetAllRoles")]  
+    [Authorize("RoleManagementView")]
     public async Task<OperationResult<List<GetRolesResponse>>> GetAllRoles(CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new GetAllRolesRequest(), cancellationToken);
@@ -28,6 +30,7 @@ public class RoleController : ControllerBase
         return result.ToOperationResult();
     } 
     [HttpGet("GetRolesByUserId")]  
+    [Authorize("RoleManagementView")]
     public async Task<OperationResult<List<GetRolesResponse>>> GetRolesByUserId([FromQuery] GetRolesByUserIdRequest request, CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);
@@ -35,6 +38,7 @@ public class RoleController : ControllerBase
         return result.ToOperationResult();
     }
     [HttpDelete("DeleteRole")]  
+    [Authorize("RoleManagementDelete")]
     public async Task<OperationResult<string>> DeleteRole([FromQuery]DeleteRoleRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);

@@ -2,11 +2,11 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.Orders.Commands.AcceptanceOrders;
-using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByEmployee;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByRepresentative;
 using Shipping.Application.Features.Orders.Commands.CreateOrder;
 using Shipping.Application.Features.Orders.Commands.DeleteOrder;
 using Shipping.Application.Features.Orders.Commands.InsertRepresentativeInOrder;
+using Shipping.Application.Features.Orders.Commands.RollBackOrder;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
@@ -16,7 +16,7 @@ using Shipping.DataAccess.Persistence.DataBase;
 using Shipping.Domain.Entities;
 using Shipping.Utils.Enums;
 
-namespace Shipping.DataAccess.Repositories;
+namespace Shipping.DataAccess.Repositories.OrderRepo;
 
 public class OrderRepository : IOrderRepository
 {
@@ -47,12 +47,14 @@ public class OrderRepository : IOrderRepository
                 Dscription = request.Dscription,
                 RecipientAddress = city.Value.Name,
                 CountOfItems = request.CountOfItems,
-                SenderPhoneNo = request.SenderPhoneNo,
+                SenderPhoneNo = customer.PhoneNumber,
                 RecipientPhoneNo = request.RecipientPhoneNo,
                 CreatedAt = DateTime.Now,
                 CustomerId = customer.Id,
                 BranchId = request.BranchId,
-                Price = city.Value.Price
+                Price = city.Value.Price,
+                OrderPrice = request.OrderPrice
+                
             };
             _shippingDb.Orders.Add(order);
         }
@@ -76,6 +78,7 @@ public class OrderRepository : IOrderRepository
                 Dscription = x.Dscription,
                 RecipientAddress = x.RecipientAddress,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 SenderPhoneNo = x.SenderPhoneNo,
                 RecipientPhoneNo = x.RecipientPhoneNo,
                 Price = x.Price,
@@ -101,9 +104,11 @@ public class OrderRepository : IOrderRepository
             .Select(x => new GetRepresentativeOrderResponse
             {
                 OrderId = x.Id,
+                OrderState = x.OrderState,
                 OrderNo = x.OrderNo,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
+                OrderPrice = x.OrderPrice,
                 RecipientPhoneNo = x.RecipientPhoneNo,
                 SenderPhoneNo = x.SenderPhoneNo
             }).ToListAsync(cancellationToken);
@@ -128,37 +133,27 @@ public class OrderRepository : IOrderRepository
         order.UpdatedAt = DateTime.Now;
        
         await _shippingDb.SaveChangesAsync(cancellationToken);
-        return "تم قبول الطلب بنجاح";    }
+        return "تم قبول الطلب بنجاح";    
+    }
 
-    public async Task<Result<string>> ChangeOrderStateByEmployeeAsync(ChangeOrderStateByEmployeeRequest request, CancellationToken cancellationToken)
+    public async Task<Result<string>> RollBackOrderAsync(RollBackOrderRequest request, CancellationToken cancellationToken)
     {
         var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+
         var order = await _shippingDb.Orders
             .FirstOrDefaultAsync(x => employee != null 
                                       && x.OrderNo == request.OrderNo 
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
-
-        OrderState? types = request.OrderState switch
-        {
-            OrderStateEmployee.DeliveredToTheRepresentative => OrderState.DeliveredToTheRepresentative,
-            OrderStateEmployee.ReturnInTheWarehouse => OrderState.ReturnInTheWarehouse,
-            OrderStateEmployee.ReturnInCustomer => OrderState.ReturnInCustomer,
-            _ =>  null
-        };
-
-        if (types == null)
-            return Result.Fail("الرجاء تحديد حالة الطلب");
         
-        order.OrderState = types.Value;
+        order.OrderState = OrderState.ReturnInCustomer;
         order.UpdatedAt = DateTime.Now;
-        _shippingDb.Orders.Update(order);
+       
         await _shippingDb.SaveChangesAsync(cancellationToken);
-        return "تم تغيير حالة الطلب بنجاح";
+        return "تم قبول الطلب بنجاح";
     }
-
+    
     public async Task<Result<string>> ChangeOrderStateByRepresentativeAsync(ChangeOrderStateByRepresentativeRequest request,
         CancellationToken cancellationToken)
     {
@@ -175,11 +170,12 @@ public class OrderRepository : IOrderRepository
         {
             OrderStateRepresentative.Delivered => OrderState.Delivered,
             OrderStateRepresentative.Returning => OrderState.Returning,
+            OrderStateRepresentative.ReturnInTheWarehouse => OrderState.ReturnInTheWarehouse,
             _ =>  null
         };
 
-        if (types == null)
-            return Result.Fail("الرجاء تحديد حالة الطلب");
+        if (types is null)
+            return Result.Fail("Order type not found");
         
         order.OrderState = types.Value;
         order.UpdatedAt = DateTime.Now;
@@ -198,8 +194,15 @@ public class OrderRepository : IOrderRepository
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
+
+        var result = _shippingDb.Representatives
+            .FirstOrDefaultAsync(x => x.UserId == request.RepresentativeId, cancellationToken).Result;
+        if (result == null)
+            return Result.Fail("المندوب غير موجود");
         
-        order.RepresentativesId = request.RepresentativeId;
+        var representative = result.Id;
+        order.RepresentativesId = representative;
+        order.OrderState = OrderState.DeliveredToTheRepresentative;
         order.UpdatedAt = DateTime.Now;
         
         await _shippingDb.SaveChangesAsync(cancellationToken);
@@ -224,6 +227,7 @@ public class OrderRepository : IOrderRepository
                 BranchName = x.Branchs.Name,
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
                 Customer = new CustomerVm
                 {
                     Name = x.Customers.Name,
@@ -257,7 +261,6 @@ public class OrderRepository : IOrderRepository
             OrderStateVm.ReturnInCustomer => OrderState.ReturnInCustomer,
             _ => null
         };
-        
         
         var orderCriteria = (types == null, request.CityId == Guid.Empty, request.RepresentativeId == Guid.Empty);
 

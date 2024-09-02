@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Shipping.Api.Models.Orders;
 using Shipping.Api.Shared;
 using Shipping.Application.Features.Orders.Commands.AcceptanceOrders;
-using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByEmployee;
 using Shipping.Application.Features.Orders.Commands.ChangeOrderStateByRepresentative;
 using Shipping.Application.Features.Orders.Commands.CreateOrder;
 using Shipping.Application.Features.Orders.Commands.DeleteOrder;
 using Shipping.Application.Features.Orders.Commands.InsertRepresentativeInOrder;
+using Shipping.Application.Features.Orders.Commands.RollBackOrder;
 using Shipping.Application.Features.Orders.Queries;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
@@ -29,7 +29,7 @@ public class OrderController : BaseController
     
     [HttpPost("CreateOrder")]
     [Authorize(Roles = "User")]
-    public async Task<OperationResult<string>> CreateOrder([FromQuery]Guid branchId,[FromQuery] Guid cityId,[FromQuery] string dscription,[FromQuery] int? countOfItems,[FromQuery] string senderPhoneNo,[FromQuery] string recipientPhoneNo, CancellationToken cancellationToken)
+    public async Task<OperationResult<string>> CreateOrder([FromQuery]Guid branchId,[FromQuery] Guid cityId,[FromQuery] string dscription,[FromQuery] int? countOfItems,[FromQuery] decimal orderPrice , [FromQuery] string recipientPhoneNo, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new CreateOrderRequest()
         {
@@ -37,7 +37,7 @@ public class OrderController : BaseController
             CityId = cityId,
             Dscription = dscription,
             CountOfItems = countOfItems,
-            SenderPhoneNo = senderPhoneNo,
+            OrderPrice = orderPrice,
             RecipientPhoneNo = recipientPhoneNo,
             UserId = GetUserId()
         }, cancellationToken);
@@ -46,10 +46,23 @@ public class OrderController : BaseController
     }  
     
     [HttpPost("AcceptanceOrder")]
-    [Authorize(Roles = "Employee")]
-    public async Task<OperationResult<string>> AcceptanceOrder([FromBody] AcceptanceOrRejectOrdersVm request, CancellationToken cancellationToken)
+    [Authorize("OrderManagementEdit")]
+    public async Task<OperationResult<string>> AcceptanceOrder([FromBody] AcceptanceOrRollBackOrdersVm request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new AcceptanceOrdersRequest()
+        {
+            OrderNo = request.OrderNo,
+            UserId = GetUserId()
+        }, cancellationToken);
+
+        return result.ToOperationResult();
+    }
+    
+    [HttpPost("RollBackOrder")]
+    [Authorize("OrderManagementEdit")]
+    public async Task<OperationResult<string>> RollBackOrder([FromBody] AcceptanceOrRollBackOrdersVm request, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new RollBackOrderRequest()
         {
             OrderNo = request.OrderNo,
             UserId = GetUserId()
@@ -59,22 +72,8 @@ public class OrderController : BaseController
     }  
     
     
-    [HttpPost("ChangeOrderStateByEmployee")] 
-    [Authorize(Roles = "Employee")]
-    public async Task<OperationResult<string>> ChangeOrderStateByEmployee([FromBody] ChangeOrderStateByEmployeeVm request, CancellationToken cancellationToken)
-    {
-        var result = await _mediator.Send(new ChangeOrderStateByEmployeeRequest()
-        {
-            OrderNo = request.OrderNo,
-            OrderState = request.OrderState,
-            UserId = GetUserId()
-        }, cancellationToken);
-
-        return result.ToOperationResult();
-    } 
-    
     [HttpPost("InsertRepresentativeInOrder")]
-    [Authorize(Roles = "Employee")]
+    [Authorize("OrderManagementEdit")]
     public async Task<OperationResult<string>> InsertRepresentativeInOrder([FromBody] InsertRepresentativeInOrderVm request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new InsertRepresentativeInOrderRequest()
@@ -94,6 +93,7 @@ public class OrderController : BaseController
         var result = await _mediator.Send(new ChangeOrderStateByRepresentativeRequest()
         {
             OrderNo = request.OrderNo,
+            OrderState = request.OrderState,
             UserId = GetUserId()
         }, cancellationToken);
 
@@ -132,7 +132,7 @@ public class OrderController : BaseController
         return result.ToOperationResult();
     }
     [HttpGet("ShearchOrder")]
-    [Authorize(Roles = "Employee")]
+    [Authorize("OrderManagementView")]
     public async Task<OperationResult<List<GetOrderResponse>>> ShearchOrder([FromQuery]ShearchOrderVm request, CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new ShearchOrderRequest()
@@ -147,7 +147,7 @@ public class OrderController : BaseController
     } 
     
     [HttpDelete("DeleteOrder")] 
-    [Authorize(Roles = "Employee")]
+    [Authorize("OrderManagementDelete")]
     public async Task<OperationResult<string>> DeleteOrder([FromQuery]DeleteOrderVm request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new DeleteOrderRequest()

@@ -1,7 +1,9 @@
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
+using Shipping.Application.Features.Auth.Commands.UpdateCustomer;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
@@ -19,87 +21,84 @@ using Shipping.Application.Features.UserManagement.Users.Queries.GetRepresentati
 using Shipping.Application.Models.IdentityModel;
 using Shipping.Application.Models.UserManagement;
 using Shipping.DataAccess.Persistence.DataBase;
+using Shipping.Domain.Entities;
 using Shipping.Domain.Models;
 using Shipping.Utils.Enums;
 
-namespace Shipping.DataAccess.Repositories;
+namespace Shipping.DataAccess.Repositories.UserManageRepo;
 
 public class UserManageRepository : IUserManagmentRepository
 {
     private readonly ShippingDbContext _shippingDb;
-    private readonly ISherdUserRepository _sherdUserRepository; 
+    private readonly IIdentityRepository _identityRepository; 
+    private readonly IUserRepository _userRepository;
     private readonly IPermissionsRepository _permissionsService;
 
-    public UserManageRepository(ShippingDbContext shippingDb, ISherdUserRepository sherdUserRepository, IPermissionsRepository permissionsService)
+    public UserManageRepository(ShippingDbContext shippingDb, IPermissionsRepository permissionsService, IUserRepository userRepository, IIdentityRepository identityRepository)
     {
         _shippingDb = shippingDb;
-        _sherdUserRepository = sherdUserRepository;
         _permissionsService = permissionsService;
+        _userRepository = userRepository;
+        _identityRepository = identityRepository;
     }
 
 
     public async Task<Result<string>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var user = await _sherdUserRepository.GetIdentityUserByUserName(request.UserName, cancellationToken);
+        var user = await _identityRepository.GetIdentityUserByUserName(request.UserName, cancellationToken);
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
         
-        var types = request.UserType switch
+        UserType? types = request.UserType switch
         {
-            UserTypeVm.Owner => UserType.Owner,
             UserTypeVm.Employee => UserType.Employee,
             UserTypeVm.Representative => UserType.Representative,
-            _ => UserType.User
-        };    
+            _ => null
+        };
 
-        var identityUser = await _sherdUserRepository.InsertIdentityUser(new InsertAndUpdateIdentityUser()
+        if (types is null)
+            return Result.Fail("User type not found");
+
+        var identityUser = await _identityRepository.InsertIdentityUser(new InsertAndUpdateIdentityUser()
         {
             PhoneNumber = request.PhoneNumber,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Address = request.Address,
             UserName = request.UserName,
-            UserType = types,
+            UserType = types.Value,
             ActivateState = ActivateState.Active,
             Password = request.Password
         }, cancellationToken);
-        
+
         if (!identityUser.IsSuccess)
             return Result.Fail(identityUser.Errors.ToList());
-        
-        var userProfile = await _sherdUserRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
+
+        var userProfile = await _userRepository.InsertUserAsync(new InsertAndUpdateUserCommnd()
         {
             UserId = Guid.Parse(identityUser.Value.Id),
             UserName = identityUser.Value.UserName,
             UserType = identityUser.Value.UserType,
             Password = request.Password,
         }, cancellationToken);
-        
+
         if (!userProfile.IsSuccess)
             return Result.Fail(userProfile.Errors.ToList());
-        
+
         var insertUser = identityUser.Value.UserType switch
         {
-            UserType.Representative => await _sherdUserRepository.InsertRepresentativeAsync(new InsertAndUpdateRepresentativeCommnd()
-            {
-                UserId = Guid.Parse(identityUser.Value.Id),
-                Address = identityUser.Value.Address,
-                PhoneNumber = identityUser.Value.PhoneNumber,
-                Name = request.FirstName + " " + request.LastName,
-                BranchId = request.BranchId
-                
-            }, cancellationToken),
-            
-            UserType.Employee => await _sherdUserRepository.InsertEmployeeAsync(new InsertAndUpdateEmployeeCommnd()
-            {
-                UserId = Guid.Parse(identityUser.Value.Id),
-                Address = identityUser.Value.Address,
-                PhoneNumber = identityUser.Value.PhoneNumber,
-                Name = request.FirstName + " " + request.LastName,
-                BranchId = request.BranchId
-            }, cancellationToken),
-            
-            UserType.Owner => await _sherdUserRepository.InsertEmployeeAsync(new InsertAndUpdateEmployeeCommnd()
+            UserType.Representative => await _userRepository.InsertRepresentativeAsync(
+                new InsertAndUpdateRepresentativeCommnd()
+                {
+                    UserId = Guid.Parse(identityUser.Value.Id),
+                    Address = identityUser.Value.Address,
+                    PhoneNumber = identityUser.Value.PhoneNumber,
+                    Name = request.FirstName + " " + request.LastName,
+                    BranchId = request.BranchId
+
+                }, cancellationToken),
+
+            UserType.Employee => await _userRepository.InsertEmployeeAsync(new InsertAndUpdateEmployeeCommnd()
             {
                 UserId = Guid.Parse(identityUser.Value.Id),
                 Address = identityUser.Value.Address,
@@ -112,14 +111,14 @@ public class UserManageRepository : IUserManagmentRepository
 
         if (!insertUser.IsSuccess)
             return Result.Fail(insertUser.Errors.ToList());
-        
-        return "تمت عملية اضافة المستخدم بنجاح ";
-        
+
+        return identityUser.Value.Id;
+
     }
     
     public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
     {
-        var user = await _sherdUserRepository.ResetIdentityPassword(new ResetIdentityPassword()
+        var user = await _identityRepository.ResetIdentityPassword(new ResetIdentityPassword()
         {
             UserName = request.UserName,
             NewPassword = request.NewPassword,
@@ -128,7 +127,7 @@ public class UserManageRepository : IUserManagmentRepository
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
         
-        var resetPassword = await _sherdUserRepository.UpdatePasswordAsync(new UpdatePasswordCommnd()
+        var resetPassword = await _userRepository.UpdatePasswordAsync(new UpdatePasswordCommnd()
         {
             UserName = request.UserName,
             NewPassword = request.NewPassword,
@@ -142,13 +141,13 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<string>> ChangeUserActivationAsync(ChangeUserActivationRequest request, CancellationToken cancellationToken)
     {
-        var user = await _sherdUserRepository.GetIdentityUserById(request.UserId, cancellationToken);
+        var user = await _identityRepository.GetIdentityUserById(request.UserId, cancellationToken);
         
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
         
         var changeUserActivation =
-            await _sherdUserRepository.ChangeIdentityActivation(new ChangeIdentityActivation()
+            await _identityRepository.ChangeIdentityActivation(new ChangeIdentityActivation()
             {
                 UserId = user.Value.Id,
                 State = request.State
@@ -158,7 +157,7 @@ public class UserManageRepository : IUserManagmentRepository
             return Result.Fail(changeUserActivation.Errors.ToList());
 
         var chengeActivation =
-            await _sherdUserRepository.ChangeUserActivationAsync(new ChangeUserActivationCommnd()
+            await _userRepository.ChangeUserActivationAsync(new ChangeUserActivationCommnd()
                 {
                     UserId = Guid.Parse(user.Value.Id),
                     State = request.State
@@ -173,36 +172,26 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<string>> UpdateUserAsync(UpdateUserRequest request, CancellationToken cancellationToken)
     {
-        var user = await _sherdUserRepository.GetIdentityUserById(request.UserId, cancellationToken);
+        var user = await _identityRepository.GetIdentityUserById(request.UserId, cancellationToken);
         
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
         
-        var updateUser = await _sherdUserRepository.UpdateIdentityCustomer(new InsertAndUpdateIdentityUser()
+        var updateUser = await _identityRepository.UpdateIdentityCustomer(new InsertAndUpdateIdentityUser()
         {
             UserId = user.Value.Id,
             FirstName = request.FristName,
             LastName = request.LastName,
             PhoneNumber = request.PhoneNumber,
             Address = request.Address,
-            UserName = request.UserName,
         },cancellationToken);
         
         if (!updateUser.IsSuccess)
             return Result.Fail(updateUser.Errors.ToList());
-        
-        var userProfile = await _sherdUserRepository.UpdateUserAsync(new InsertAndUpdateUserCommnd()
-        {
-            UserId = Guid.Parse(updateUser.Value),
-            UserName = request.UserName,
-        }, cancellationToken);
-        
-        if (!userProfile.IsSuccess)
-            return Result.Fail(userProfile.Errors.ToList());
 
         var update = user.Value.UserType switch
         {
-            UserType.Representative => await _sherdUserRepository.UpdateRepresentativeAsync(
+            UserType.Representative => await _userRepository.UpdateRepresentativeAsync(
                 new InsertAndUpdateRepresentativeCommnd()
                 {
                     UserId = Guid.Parse(updateUser.Value),
@@ -210,22 +199,14 @@ public class UserManageRepository : IUserManagmentRepository
                     Address = request.Address,
                     Name = request.FristName + " " + request.LastName
                 }, cancellationToken),
-            UserType.Employee => await _sherdUserRepository.UpdateEmployeeAsync(
+            UserType.Employee => await _userRepository.UpdateEmployeeAsync(
                 new InsertAndUpdateEmployeeCommnd()
                 {
                     UserId = Guid.Parse(updateUser.Value),
                     PhoneNumber = request.PhoneNumber,
                     Address = request.Address,
                     Name = request.FristName + " " + request.LastName
-                }, cancellationToken), 
-            UserType.Owner => await _sherdUserRepository.UpdateEmployeeAsync(
-                new InsertAndUpdateEmployeeCommnd()
-                {
-                    UserId = Guid.Parse(updateUser.Value),
-                    PhoneNumber = request.PhoneNumber,
-                    Address = request.Address,
-                    Name = request.FristName + " " + request.LastName
-                }, cancellationToken),
+                }, cancellationToken)
         };
         if (!update.IsSuccess)
             return Result.Fail(update.Errors.ToList());
@@ -234,6 +215,35 @@ public class UserManageRepository : IUserManagmentRepository
 
     }
 
+    public async Task<Result<string>> UpdateCustomerAsync(UpdateCustomerRequest request, CancellationToken cancellationToken)
+    {
+        var customer = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+
+        if (customer != null)
+        {
+            var updateUser = await _identityRepository.UpdateIdentityCustomer(new InsertAndUpdateIdentityUser()
+            {
+                UserId = customer.UserId.ToString(),
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
+                Address = request.Address,
+            },cancellationToken);
+        
+            if (!updateUser.IsSuccess)
+                return Result.Fail(updateUser.Errors.ToList());
+            
+            customer.PhoneNumber = request.PhoneNumber;
+            customer.Address = request.Address;
+            customer.Name = request.FirstName + " " + request.LastName;
+        }
+
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+        if (result <= 0)
+            Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+        
+        return "تم تعديل بنجاح";
+    }
 
     public async Task<Result<List<GetCustomersResponse>>> GetCustomersAsync(GetCustomersRequest request,
         CancellationToken cancellationToken)
@@ -368,7 +378,6 @@ public class UserManageRepository : IUserManagmentRepository
         if (!allPermissions.IsSuccess)
             return Result.Fail(allPermissions.Errors.ToList());
         
-        
         var claim = new List<Claim>();
         foreach (var t in allPermissions.Value)
         {
@@ -376,18 +385,22 @@ public class UserManageRepository : IUserManagmentRepository
             {
                 request.Permissions.ForEach(y =>
                 {
-                    if (y.ToString() == x.PermissionId.ToString())
+                    if (y == x.PermissionId)
                         claim.Add(new Claim(t.RoleName, x.PermissionName));
                 });
             });
         }
+
+        if (claim.Count <= 0)
+            return Result.Fail("لا يوجد صلاحيات");
+        
         var claims = claim.GroupBy(x => x.Type).Select(y => new UserClaims 
         { 
             type = y.Key, 
             value = y.Select(x => x.Value).ToList() 
         }).ToList();
         
-        var identityClims = await _sherdUserRepository.InsertIdentityUserClaims(new InsertAndUpdateIdentityClaims()
+        var identityClims = await _identityRepository.InsertIdentityUserClaims(new InsertAndUpdateIdentityClaims()
         {
             UserId = request.UserId,
             Claims = claims
@@ -396,7 +409,7 @@ public class UserManageRepository : IUserManagmentRepository
         if (!identityClims.IsSuccess)
             return Result.Fail(identityClims.Errors.ToList());
 
-        var userClims = await _sherdUserRepository.CreateUserPermissions(new InsertAndUpdateUserPermissions()
+        var userClims = await _userRepository.CreateUserPermissions(new InsertAndUpdateUserPermissions()
         {
             UserId =   request.UserId,
             Permissions = request.Permissions,
@@ -439,7 +452,7 @@ public class UserManageRepository : IUserManagmentRepository
             value = y.Select(x => x.Value).ToList() 
         }).ToList();
         
-        var identityClims = await _sherdUserRepository.UpdateIdentityUserClaims(new InsertAndUpdateIdentityClaims()
+        var identityClims = await _identityRepository.UpdateIdentityUserClaims(new InsertAndUpdateIdentityClaims()
         {
             UserId = request.UserId.ToString(),
             Claims = claims
@@ -448,7 +461,7 @@ public class UserManageRepository : IUserManagmentRepository
         if (!identityClims.IsSuccess)
             return Result.Fail(identityClims.Errors.ToList());
 
-        var userClims = await _sherdUserRepository.UpdateUserPermissions(new InsertAndUpdateUserPermissions()
+        var userClims = await _userRepository.UpdateUserPermissions(new InsertAndUpdateUserPermissions()
         {
             UserId =   request.UserId.ToString(),
             Permissions = request.Permissions,

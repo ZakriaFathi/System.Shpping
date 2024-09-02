@@ -15,6 +15,7 @@ public class Order
     public string SenderPhoneNo { get; set; }
     public string RecipientPhoneNo { get; set; }
     public decimal? Price { get; set; }
+    public decimal? OrderPrice { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 

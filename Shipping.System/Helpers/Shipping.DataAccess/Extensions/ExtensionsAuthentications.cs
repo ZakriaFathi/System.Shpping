@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Shipping.Domain.Entities;
+using Shipping.Utils.Enums;
 
 namespace Shipping.DataAccess.Extensions;
 
@@ -59,6 +61,175 @@ public static class ExtensionsAuthentications
                 };
 
             });
-        
+
+        services.AddAuthorization(options =>
+        {
+            #region UserManagement
+
+            options.AddPolicy("UserManagementCreate", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.UserManagement.ToString("G"), 
+                    PermissionNames.Create.ToString("G")
+                ); 
+            });  
+            options.AddPolicy("UserManagementEdit", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.UserManagement.ToString("G"), 
+                    PermissionNames.Edit.ToString("G")
+                ); 
+            }); 
+            options.AddPolicy("UserManagementView", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.UserManagement.ToString("G"), 
+                    PermissionNames.View.ToString("G")
+                ); 
+            }); 
+            options.AddPolicy("UserManagementDelete", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.UserManagement.ToString("G"), 
+                    PermissionNames.Delete.ToString("G")
+                ); 
+            });
+
+            #endregion
+
+            #region OrderManagement
+
+            options.AddPolicy("OrderManagementView", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(
+                    RoleType.OrderManagement.ToString("G"),
+                    PermissionNames.View.ToString("G")
+                );
+            }); 
+            options.AddPolicy("OrderManagementEdit", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(
+                    RoleType.OrderManagement.ToString("G"),
+                    PermissionNames.Edit.ToString("G")
+                );
+            });  
+            options.AddPolicy("OrderManagementDelete", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(
+                    RoleType.OrderManagement.ToString("G"),
+                    PermissionNames.Delete.ToString("G")
+                );
+            });
+
+            #endregion
+
+            #region BranchManagement
+
+            options.AddPolicy("BranchManagementCreate", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.BranchManagement.ToString("G"), 
+                    PermissionNames.Create.ToString("G")
+                ); 
+            });  
+            options.AddPolicy("BranchManagementEdit", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.BranchManagement.ToString("G"), 
+                    PermissionNames.Edit.ToString("G")
+                ); 
+            }); 
+            options.AddPolicy("BranchManagementView", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.BranchManagement.ToString("G"), 
+                    PermissionNames.View.ToString("G")
+                ); 
+            }); 
+            options.AddPolicy("BranchManagementDelete", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.BranchManagement.ToString("G"), 
+                    PermissionNames.Delete.ToString("G")
+                ); 
+            });
+
+            #endregion
+
+            #region CityManagement
+
+            options.AddPolicy("CityManagementView", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.CityManagement.ToString("G"), 
+                    PermissionNames.View.ToString("G")
+                ); 
+            });
+            options.AddPolicy("CityManagementCreate", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.CityManagement.ToString("G"), 
+                    PermissionNames.Create.ToString("G")
+                ); 
+            }); 
+            options.AddPolicy("CityManagementEdit", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.CityManagement.ToString("G"), 
+                    PermissionNames.Edit.ToString("G")
+                ); 
+            });   
+            options.AddPolicy("CityManagementDelete", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.CityManagement.ToString("G"), 
+                    PermissionNames.Delete.ToString("G")
+                ); 
+            });
+
+            #endregion
+
+            #region PermissionManagement
+
+            options.AddPolicy("PermissionManagementView", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.PermissionManagement.ToString("G"), 
+                    PermissionNames.View.ToString("G")
+                ); 
+            }); 
+            options.AddPolicy("PermissionManagementDelete", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.PermissionManagement.ToString("G"), 
+                    PermissionNames.Delete.ToString("G")
+                ); 
+            });
+
+            #endregion
+
+            #region RoleManagement
+
+            options.AddPolicy("RoleManagementView", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.RoleManagement.ToString("G"),
+                    PermissionNames.View.ToString("G")
+                );
+            });  
+            options.AddPolicy("RoleManagementDelete", policyUser =>
+            {
+                policyUser.RequireRole("Employee", "Owner");
+                policyUser.RequireClaim(RoleType.RoleManagement.ToString("G"),
+                    PermissionNames.Delete.ToString("G")
+                );
+            }); 
+
+            #endregion
+            
+        });
     }
 }

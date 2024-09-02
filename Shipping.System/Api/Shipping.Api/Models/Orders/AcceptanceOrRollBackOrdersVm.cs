@@ -1,6 +1,6 @@
 namespace Shipping.Api.Models.Orders;
 
-public class AcceptanceOrRejectOrdersVm
+public class AcceptanceOrRollBackOrdersVm
 {
     public string OrderNo { get; set; }
 }

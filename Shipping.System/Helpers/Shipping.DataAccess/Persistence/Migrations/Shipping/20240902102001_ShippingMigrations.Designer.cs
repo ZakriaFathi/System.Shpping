@@ -12,7 +12,7 @@ using Shipping.DataAccess.Persistence.DataBase;
 namespace Shipping.DataAccess.Persistence.Migrations.Shipping
 {
     [DbContext(typeof(ShippingDbContext))]
-    [Migration("20240827180425_ShippingMigrations")]
+    [Migration("20240902102001_ShippingMigrations")]
     partial class ShippingMigrations
     {
         /// <inheritdoc />
@@ -153,6 +153,9 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                     b.Property<string>("OrderNo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("OrderPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("OrderState")
                         .HasColumnType("int");

@@ -151,6 +151,9 @@ namespace Shipping.DataAccess.Persistence.Migrations.Shipping
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("OrderPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("OrderState")
                         .HasColumnType("int");
 

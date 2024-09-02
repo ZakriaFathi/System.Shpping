@@ -9,7 +9,8 @@ public class GetOrderResponse
     public OrderState OrderState { get; set; }
     public string Dscription { get; set; }
     public string RecipientAddress { get; set; }
-    public int? CountOfItems { get; set; }
+    public int? CountOfItems { get; set; } 
+    public decimal? OrderPrice { get; set; }
     public string SenderPhoneNo { get; set; }
     public string RecipientPhoneNo { get; set; }
     public decimal? Price { get; set; }

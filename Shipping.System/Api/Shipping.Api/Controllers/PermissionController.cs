@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shipping.Application.Features.UserManagement.Permissions;
 using Shipping.Application.Features.UserManagement.Permissions.Commands.CreatePermission;
@@ -23,20 +24,23 @@ public class PermissionController : ControllerBase
     }
     
     [HttpGet("GetAllPermissions")]  
+    [Authorize("PermissionManagementView")]
     public async Task<OperationResult<List<GetPermissionsResponse>>> GetAllPermissions(CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new GetAllPermissionsRequest(), cancellationToken);
 
         return result.ToOperationResult();
     } 
-    [HttpGet("GetAllPermissionsByRoleId")]  
-    public async Task<OperationResult<List<GetPermissionsResponse>>> GetAllPermissionsByRoleId(GetAllPermissionsByRoleIdRequest request,CancellationToken cancellationToken)
+    [HttpGet("GetAllPermissionsByRoleId")] 
+    [Authorize("PermissionManagementView")]
+    public async Task<OperationResult<List<GetPermissionsResponse>>> GetAllPermissionsByRoleId([FromQuery]GetAllPermissionsByRoleIdRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);
 
         return result.ToOperationResult();
     }
-    [HttpDelete("DeletePermission")]  
+    [HttpDelete("DeletePermission")] 
+    [Authorize("PermissionManagementDelete")]
     public async Task<OperationResult<string>> DeletePermission([FromQuery]DeletePermissionRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);
