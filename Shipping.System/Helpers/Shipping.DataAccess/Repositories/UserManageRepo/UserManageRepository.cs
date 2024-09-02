@@ -45,6 +45,8 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<string>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
+        var customer = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+
         var user = await _identityRepository.GetIdentityUserByUserName(request.UserName, cancellationToken);
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
@@ -94,7 +96,7 @@ public class UserManageRepository : IUserManagmentRepository
                     Address = identityUser.Value.Address,
                     PhoneNumber = identityUser.Value.PhoneNumber,
                     Name = request.FirstName + " " + request.LastName,
-                    BranchId = request.BranchId
+                    BranchId = customer.BranchId.Value
 
                 }, cancellationToken),
 
@@ -104,7 +106,7 @@ public class UserManageRepository : IUserManagmentRepository
                 Address = identityUser.Value.Address,
                 PhoneNumber = identityUser.Value.PhoneNumber,
                 Name = request.FirstName + " " + request.LastName,
-                BranchId = request.BranchId
+                BranchId = customer.BranchId.Value
             }, cancellationToken),
             _ => Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" })
         };

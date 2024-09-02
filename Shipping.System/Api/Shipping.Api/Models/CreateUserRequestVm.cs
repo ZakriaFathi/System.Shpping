@@ -1,12 +1,9 @@
-using FluentResults;
-using MediatR;
 using Shipping.Utils.Enums;
 
-namespace Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
+namespace Shipping.Api.Models;
 
-public class CreateUserRequest : IRequest<Result<string>>
+public class CreateUserRequestVm
 {
-    public string UserId { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Address { get; set; }
@@ -14,5 +11,4 @@ public class CreateUserRequest : IRequest<Result<string>>
     public string Password { get; set; }
     public string PhoneNumber { get; set; }
     public UserTypeVm UserType { get; set; }
-
 }

@@ -79,9 +79,20 @@ public class UserManagementController : BaseController
     
     [HttpPost("CreateUser")]
     [Authorize("UserManagementCreate")]
-    public async Task<OperationResult<string>> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
+    public async Task<OperationResult<string>> CreateUser([FromBody] CreateUserRequestVm request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(request, cancellationToken);
+        var result = await _mediator.Send(new CreateUserRequest()
+        {
+            UserId = GetUserId(),
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Address = request.Address,
+            UserName = request.UserName,
+            Password = request.Password,
+            PhoneNumber = request.PhoneNumber,
+            UserType = request.UserType,
+            
+        }, cancellationToken);
         
         return result.ToOperationResult();
     }
