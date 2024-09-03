@@ -1,13 +1,9 @@
 using System.Security.Claims;
 using FluentResults;
-using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.Branchs.Commands.CreateBranch;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
-using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
-using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
 using Shipping.Application.Models.IdentityModel;
 using Shipping.Application.Models.UserManagement;
 using Shipping.DataAccess.Persistence.DataBase;

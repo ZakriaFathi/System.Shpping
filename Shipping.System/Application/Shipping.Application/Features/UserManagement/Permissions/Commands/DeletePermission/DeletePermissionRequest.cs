@@ -5,5 +5,5 @@ namespace Shipping.Application.Features.UserManagement.Permissions.Commands.Dele
 
 public class DeletePermissionRequest : IRequest<Result<string>>
 {
-    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
 }

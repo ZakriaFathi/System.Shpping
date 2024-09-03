@@ -26,13 +26,13 @@ public class IdentityRepository : IIdentityRepository
         return user;
     }
 
-    public async Task<Result<AppUser>> GetIdentityUserByUserName(string userName, CancellationToken cancellationToken)
+    public async Task<Result<string>> GetIdentityUserByUserName(string userName, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByNameAsync(userName);
         if (user != null)
             return Result.Fail(new List<string>() { "هذا المستخدم موجود" });
 
-        return user;
+        return Result.Ok();
     }
 
     public async Task<Result<string>> ResetIdentityPassword(ResetIdentityPassword command, CancellationToken cancellationToken)
@@ -47,11 +47,10 @@ public class IdentityRepository : IIdentityRepository
             return Result.Fail(new List<string>() { "كلمة المرور غير متطابقة" });
 
         var result = await _userManager.ResetPasswordAsync(user, token, command.NewPassword);
-
-        if (result.Succeeded)
-            return "تم تغيير كلمة المرور بنجاح";
-
-        return Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+        
+        return result.Succeeded ?
+            "تم تغيير كلمة المرور بنجاح" :
+            Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");
     }
 
     public async Task<Result<AppUser>> SingUp(SingUpCommnd request, CancellationToken cancellationToken)
@@ -70,12 +69,13 @@ public class IdentityRepository : IIdentityRepository
             UserType = UserType.User,
             ActivateState = ActivateState.Active,
         }; 
-        await _userManager.CreateAsync(user, request.Password);
-        
-        await _userManager.AddToRoleAsync(user, user.UserType.ToString("G"));
         
         if (request.Password.Length <= 7)
             return Result.Fail(new List<string>{ "كلمة المرور اقل من 8 " });
+        
+        await _userManager.CreateAsync(user, request.Password);
+        
+        await _userManager.AddToRoleAsync(user, user.UserType.ToString("G"));
         
         return user;
     }
@@ -119,12 +119,11 @@ public class IdentityRepository : IIdentityRepository
         user.Address = command.Address;
         user.UserName = command.UserName;
         
-        var response = await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateAsync(user);
         
-        if (response.Succeeded)
-            return user.Id;
-
-        return Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");    
+        return result.Succeeded ?
+            user.Id :
+            Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");    
     }
 
     public async Task<Result<string>> ChangeIdentityActivation(ChangeIdentityActivation command, CancellationToken cancellationToken)
@@ -160,10 +159,9 @@ public class IdentityRepository : IIdentityRepository
 
         var result = await _userManager.AddClaimsAsync(user, claims);
 
-        if (result.Succeeded)
-            return user.Id;
-
-        return Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+        return result.Succeeded ?
+            user.Id :
+            Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");
     }
 
     public async Task<Result<string>> UpdateIdentityUserClaims(InsertAndUpdateIdentityClaims command, CancellationToken cancellationToken)
@@ -189,9 +187,26 @@ public class IdentityRepository : IIdentityRepository
         });
         var result = await _userManager.AddClaimsAsync(user, claims);
 
-        if (result.Succeeded)
-            return user.Id;
+        return result.Succeeded ?
+            user.Id :
+            Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");
+    }
 
-        return Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+    public async Task<Result<string>> DeleteUser(string userId, CancellationToken cancellationToken)
+    {
+        var identity = await GetIdentityUserById(userId, cancellationToken);
+        if (identity.IsFailed)
+            return Result.Fail(identity.Errors.ToList());
+        
+        var user = identity.Value;
+
+        if (user.UserType == UserType.Owner)
+            return Result.Fail("لا يمكن حذف مستخدم مالك الشركة");
+        
+        var result = await _userManager.DeleteAsync(user);
+        
+        return result.Succeeded ?
+            user.Id :
+            Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");
     }
 }

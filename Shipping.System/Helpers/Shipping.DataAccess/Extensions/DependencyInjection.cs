@@ -35,7 +35,6 @@ public static class DependencyInjection
         services.AddTransient<IAuthRepository, AuthRepository>();
         services.AddTransient<IUserManagmentRepository, UserManageRepository>();
         services.AddTransient<IPermissionsRepository, PermissionsRepository>();
-        services.AddTransient<IRoleRepository, RoleRepository>();
         services.AddTransient<ICityRepository, CityRepository>();
         services.AddTransient<IBranchRepository, BranchRepository>();
         services.AddTransient<IOrderRepository, OrderRepository>();

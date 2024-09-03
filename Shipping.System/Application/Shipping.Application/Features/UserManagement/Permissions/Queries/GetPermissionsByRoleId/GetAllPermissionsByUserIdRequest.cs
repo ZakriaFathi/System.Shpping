@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Shipping.Application.Features.UserManagement.Permissions.Queries.GetPermissionsByRoleId;
 
-public class GetAllPermissionsByRoleIdRequest : IRequest<Result<List<GetPermissionsResponse>>>
+public class GetAllPermissionsByUserIdRequest : IRequest<Result<List<GetPermissionsResponse>>>
 {
-    public Guid RoleId { get; set; }
+    public Guid UserId { get; set; }
 }

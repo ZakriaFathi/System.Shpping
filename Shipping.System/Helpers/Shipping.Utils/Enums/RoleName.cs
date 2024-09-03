@@ -19,8 +19,6 @@ public enum RoleName
     [Permission(PermissionNames.View, PermissionNames.Delete)]
     PermissionManagement,
     
-    [Permission(PermissionNames.View, PermissionNames.Delete)]
-    RoleManagement
 }
 
 public enum RoleType

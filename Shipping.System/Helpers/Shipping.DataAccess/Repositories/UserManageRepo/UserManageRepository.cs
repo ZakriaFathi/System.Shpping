@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Shipping.Application.Abstracts;
 using Shipping.Application.Features.Auth.Commands.UpdateCustomer;
+using Shipping.Application.Features.UserManagement.Permissions.Commands.DeletePermission;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
@@ -45,8 +47,6 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<string>> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var customer = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-
         var user = await _identityRepository.GetIdentityUserByUserName(request.UserName, cancellationToken);
         if (!user.IsSuccess)
             return Result.Fail(user.Errors.ToList());
@@ -87,6 +87,7 @@ public class UserManageRepository : IUserManagmentRepository
         if (!userProfile.IsSuccess)
             return Result.Fail(userProfile.Errors.ToList());
 
+        
         var insertUser = identityUser.Value.UserType switch
         {
             UserType.Representative => await _userRepository.InsertRepresentativeAsync(
@@ -96,7 +97,7 @@ public class UserManageRepository : IUserManagmentRepository
                     Address = identityUser.Value.Address,
                     PhoneNumber = identityUser.Value.PhoneNumber,
                     Name = request.FirstName + " " + request.LastName,
-                    BranchId = customer.BranchId.Value
+                    BranchId = request.BranchId
 
                 }, cancellationToken),
 
@@ -106,13 +107,16 @@ public class UserManageRepository : IUserManagmentRepository
                 Address = identityUser.Value.Address,
                 PhoneNumber = identityUser.Value.PhoneNumber,
                 Name = request.FirstName + " " + request.LastName,
-                BranchId = customer.BranchId.Value
+                BranchId = request.BranchId
             }, cancellationToken),
             _ => Result.Fail(new List<string>() { "حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني" })
         };
 
         if (!insertUser.IsSuccess)
             return Result.Fail(insertUser.Errors.ToList());
+
+        if (identityUser.Value.UserType == UserType.Employee)
+            await CreateUserPermissions(identityUser.Value.Id, cancellationToken);
 
         return identityUser.Value.Id;
 
@@ -424,7 +428,7 @@ public class UserManageRepository : IUserManagmentRepository
     }
     public async Task<Result<string>> UpdateUserPermissionsAsync(UpdateUserPermissionsRequest request, CancellationToken cancellationToken)
     {
-        var deleteOldPermissions = await _permissionsService.DeleteUserPermissions(request.UserId, cancellationToken);
+        var deleteOldPermissions = await _permissionsService.DeleteUserPermissions(new DeletePermissionRequest() { UserId = request.UserId }, cancellationToken);
         
         if (!deleteOldPermissions.IsSuccess)
             return Result.Fail(deleteOldPermissions.Errors.ToList());
@@ -477,9 +481,15 @@ public class UserManageRepository : IUserManagmentRepository
 
     public async Task<Result<string>> DeleteUser(DeleteUserRequest request, CancellationToken cancellationToken)
     {
-        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        var deleteuser = await _identityRepository.DeleteUser(request.Id.ToString(), cancellationToken);
+        if (!deleteuser.IsSuccess)
+            return Result.Fail(deleteuser.Errors.ToList());
+        
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == Guid.Parse(deleteuser.Value), cancellationToken);
         if(user == null)
             return Result.Fail("هذا المستخدم غير موجود");
+        
+        await _permissionsService.DeleteUserPermissions(new DeletePermissionRequest() { UserId = user.Id }, cancellationToken);
         
         _shippingDb.Users.Remove(user);
         await _shippingDb.SaveChangesAsync(cancellationToken);
@@ -529,5 +539,59 @@ public class UserManageRepository : IUserManagmentRepository
             return Result.Fail("لا يوجد موظفين");
 
         return users;
+    }
+    
+    private async Task<Result<string>> CreateUserPermissions(string userId, CancellationToken cancellationToken)
+    {
+        var allPermissions =
+            await _permissionsService.GetAllPermissions(new GetAllPermissionsRequest(), cancellationToken);
+        
+        if (!allPermissions.IsSuccess)
+            return Result.Fail(allPermissions.Errors.ToList());
+
+        var filteredPermissions = new List<Guid>();
+        var claim = new List<Claim>();
+        
+        foreach (var role in allPermissions.Value)
+        {
+            foreach (var permission in role.Permissions)
+            {
+                if (permission.PermissionName == PermissionNames.View.ToString("G"))
+                {
+                    claim.Add(new Claim(role.RoleName, permission.PermissionName));
+                    filteredPermissions.Add(permission.PermissionId);
+                }
+            }
+        }
+
+
+        if (claim.Count <= 0)
+            return Result.Fail("لا يوجد صلاحيات");
+        
+        var claims = claim.GroupBy(x => x.Type).Select(y => new UserClaims 
+        { 
+            type = y.Key, 
+            value = y.Select(x => x.Value).ToList() 
+        }).ToList();
+        
+        var identityClims = await _identityRepository.InsertIdentityUserClaims(new InsertAndUpdateIdentityClaims()
+        {
+            UserId = userId,
+            Claims = claims
+        }, cancellationToken);
+        
+        if (!identityClims.IsSuccess)
+            return Result.Fail(identityClims.Errors.ToList());
+
+        var userClims = await _userRepository.CreateUserPermissions(new InsertAndUpdateUserPermissions()
+        {
+            UserId =   userId,
+            Permissions = filteredPermissions,
+        }, cancellationToken);
+        
+        if (!userClims.IsSuccess)
+            return Result.Fail(userClims.Errors.ToList());
+
+        return " تمت اضافة صلاحيات المستخدم بنجاح ";
     }
 }

@@ -14,5 +14,5 @@ public class DeletePermissionRequestHandler : IRequestHandler<DeletePermissionRe
     }
 
     public async Task<Result<string>> Handle(DeletePermissionRequest request, CancellationToken cancellationToken)
-        => await _permissionsRepository.DeletePermissions(request, cancellationToken);
+        => await _permissionsRepository.DeleteUserPermissions(request, cancellationToken);
 }

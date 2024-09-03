@@ -210,25 +210,6 @@ public static class ExtensionsAuthentications
             });
 
             #endregion
-
-            #region RoleManagement
-
-            options.AddPolicy("RoleManagementView", policyUser =>
-            {
-                policyUser.RequireRole("Employee", "Owner");
-                policyUser.RequireClaim(RoleType.RoleManagement.ToString("G"),
-                    PermissionNames.View.ToString("G")
-                );
-            });  
-            options.AddPolicy("RoleManagementDelete", policyUser =>
-            {
-                policyUser.RequireRole("Employee", "Owner");
-                policyUser.RequireClaim(RoleType.RoleManagement.ToString("G"),
-                    PermissionNames.Delete.ToString("G")
-                );
-            }); 
-
-            #endregion
             
         });
     }
