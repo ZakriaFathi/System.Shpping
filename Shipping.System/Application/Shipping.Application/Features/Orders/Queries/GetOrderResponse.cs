@@ -6,7 +6,7 @@ public class GetOrderResponse
 {
     public Guid OrderId { get; set; }
     public string OrderNo { get; set; }
-    public OrderState OrderState { get; set; }
+    public string OrderState { get; set; }
     public string Dscription { get; set; }
     public int? CountOfItems { get; set; } 
     public decimal? OrderPrice { get; set; }

@@ -75,7 +75,7 @@ public class OrderRepository : IOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 Dscription = x.Dscription,
                 RecipientAddress = x.RecipientAddress,
                 CountOfItems = x.CountOfItems,
@@ -105,7 +105,7 @@ public class OrderRepository : IOrderRepository
             .Select(x => new GetRepresentativeOrderResponse
             {
                 OrderId = x.Id,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 OrderNo = x.OrderNo,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
@@ -220,7 +220,7 @@ public class OrderRepository : IOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,

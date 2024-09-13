@@ -30,7 +30,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -96,7 +96,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -135,7 +135,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -171,7 +171,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -209,7 +209,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -246,7 +246,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -285,7 +285,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -320,7 +320,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -356,7 +356,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -389,7 +389,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -412,7 +412,8 @@ public class SherdOrderRepository : ISherdOrderRepository
         if (orders.Count <= 0)
             return Result.Fail("لا يوجد طلبات");
 
-        return orders;    }
+        return orders;    
+    }
 
     public async Task<Result<List<GetOrderResponse>>> GetOrderByAll(OrderState state, Guid representativeId, string cityName, Guid branchId,
         CancellationToken cancellationToken)
@@ -427,7 +428,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState,
+                OrderState = x.OrderState.ToString("G"),
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
