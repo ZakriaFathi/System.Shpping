@@ -11,6 +11,7 @@ using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
 using Shipping.Application.Features.Orders.Queries;
+using Shipping.Application.Features.Orders.Queries.GetOrderByOrderNo;
 using Shipping.Application.Features.Orders.Queries.ShearchOrder;
 using Shipping.DataAccess.Persistence.DataBase;
 using Shipping.Domain.Entities;
@@ -195,8 +196,8 @@ public class OrderRepository : IOrderRepository
         if (order == null)
             return Result.Fail("الطلب غير موجود");
 
-        var result = _shippingDb.Representatives
-            .FirstOrDefaultAsync(x => x.UserId == request.RepresentativeId, cancellationToken).Result;
+        var result = await _shippingDb.Representatives
+            .FirstOrDefaultAsync(x => x.UserId == request.RepresentativeId, cancellationToken);
         if (result == null)
             return Result.Fail("المندوب غير موجود");
         
@@ -242,6 +243,13 @@ public class OrderRepository : IOrderRepository
         if (orders.Count <= 0)
             return Result.Fail<List<GetOrderResponse>>("لا يوجد طلبات");
         return orders;
+    }
+
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByOrderNoAsync(GetOrderByOrderNoRequest request, CancellationToken cancellationToken)
+    {
+        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        
+        return await _sherdOrder.GetOrderByOrderNo(request.OrderNo, employee.BranchId.Value, cancellationToken);
     }
 
     public async Task<Result<List<GetOrderResponse>>> ShearchOrderAsync(ShearchOrderRequest request, CancellationToken cancellationToken)

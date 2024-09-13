@@ -312,6 +312,108 @@ public class SherdOrderRepository : ISherdOrderRepository
         return orders;
     }
 
+    public async Task<Result<List<GetOrderResponse>>> GetOrderBySenderPhoneNo(string senderPhoneNo, Guid branchId,
+        CancellationToken cancellationToken)
+    {
+        var orders = await _shippingDb.Orders.Where(x => x.SenderPhoneNo == senderPhoneNo)
+            .Select(x => new GetOrderResponse
+            {
+                OrderId = x.Id,
+                OrderNo = x.OrderNo,
+                OrderState = x.OrderState,
+                RecipientAddress = x.RecipientAddress,
+                Price = x.Price,
+                RecipientPhoneNo = x.RecipientPhoneNo,
+                SenderPhoneNo = x.SenderPhoneNo,
+                BranchName = x.Branchs.Name,
+                Dscription = x.Dscription,
+                CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
+                Representative = new RepresentativeVm
+                {
+                    Name = x.Representatives.Name,
+                    PhoneNumber = x.Representatives.PhoneNumber
+                },
+                Customer = new CustomerVm
+                {
+                    Name = x.Customers.Name,
+                    PhoneNumber = x.Customers.PhoneNumber
+                }
+            }).ToListAsync(cancellationToken);
+        if (orders.Count <= 0)
+            return Result.Fail("لا يوجد طلبات");
+
+        return orders;
+    }
+
+    public async Task<Result<List<GetOrderResponse>>> GetOrderBySenderPhoneNoAndOrderNo(string senderPhoneNo, string orderNo, Guid branchId,
+        CancellationToken cancellationToken)
+    {
+        var orders = await _shippingDb.Orders
+            .Where(x => x.SenderPhoneNo == senderPhoneNo &&
+                        x.OrderNo == orderNo)
+            .Select(x => new GetOrderResponse
+            {
+                OrderId = x.Id,
+                OrderNo = x.OrderNo,
+                OrderState = x.OrderState,
+                RecipientAddress = x.RecipientAddress,
+                Price = x.Price,
+                RecipientPhoneNo = x.RecipientPhoneNo,
+                SenderPhoneNo = x.SenderPhoneNo,
+                BranchName = x.Branchs.Name,
+                Dscription = x.Dscription,
+                CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
+                Representative = new RepresentativeVm
+                {
+                    Name = x.Representatives.Name,
+                    PhoneNumber = x.Representatives.PhoneNumber
+                },
+                Customer = new CustomerVm
+                {
+                    Name = x.Customers.Name,
+                    PhoneNumber = x.Customers.PhoneNumber
+                }
+            }).ToListAsync(cancellationToken);
+        if (orders.Count <= 0)
+            return Result.Fail("لا يوجد طلبات");
+
+        return orders;
+    }
+
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByOrderNo(string orderNo, Guid branchId, CancellationToken cancellationToken)
+    {
+        var orders = await _shippingDb.Orders.Where(x => x.OrderNo == orderNo)
+            .Select(x => new GetOrderResponse
+            {
+                OrderId = x.Id,
+                OrderNo = x.OrderNo,
+                OrderState = x.OrderState,
+                RecipientAddress = x.RecipientAddress,
+                Price = x.Price,
+                RecipientPhoneNo = x.RecipientPhoneNo,
+                SenderPhoneNo = x.SenderPhoneNo,
+                BranchName = x.Branchs.Name,
+                Dscription = x.Dscription,
+                CountOfItems = x.CountOfItems,
+                OrderPrice = x.OrderPrice,
+                Representative = new RepresentativeVm
+                {
+                    Name = x.Representatives.Name,
+                    PhoneNumber = x.Representatives.PhoneNumber
+                },
+                Customer = new CustomerVm
+                {
+                    Name = x.Customers.Name,
+                    PhoneNumber = x.Customers.PhoneNumber
+                }
+            }).ToListAsync(cancellationToken);
+        if (orders.Count <= 0)
+            return Result.Fail("لا يوجد طلبات");
+
+        return orders;    }
+
     public async Task<Result<List<GetOrderResponse>>> GetOrderByAll(OrderState state, Guid representativeId, string cityName, Guid branchId,
         CancellationToken cancellationToken)
     {

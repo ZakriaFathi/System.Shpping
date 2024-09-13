@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Shipping.Api.Models.Orders;
 using Shipping.Api.Shared;
 using Shipping.Application.Features.Orders.Commands.AcceptanceOrders;
@@ -10,11 +13,13 @@ using Shipping.Application.Features.Orders.Commands.DeleteOrder;
 using Shipping.Application.Features.Orders.Commands.InsertRepresentativeInOrder;
 using Shipping.Application.Features.Orders.Commands.RollBackOrder;
 using Shipping.Application.Features.Orders.Queries;
+using Shipping.Application.Features.Orders.Queries.GetOrderByOrderNo;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
 using Shipping.Application.Features.Orders.Queries.ShearchOrder;
 using Shipping.Utils.Vm;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Shipping.Api.Controllers;
 
@@ -141,6 +146,18 @@ public class OrderController : BaseController
             OrderState = request.OrderState,
             CityId = request.CityId,
             RepresentativeId = request.RepresentativeId
+        }, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
+    [HttpGet("GetOrderByOrderNo")]
+    [Authorize("OrderManagementView")]
+    public async Task<OperationResult<List<GetOrderResponse>>> GetOrderByOrderNo([FromQuery]GetOrderByOrderNoVm request , CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(new GetOrderByOrderNoRequest()
+        {
+            UserId = GetUserId(),
+            OrderNo = request.OrderNo,
         }, cancellationToken);
 
         return result.ToOperationResult();

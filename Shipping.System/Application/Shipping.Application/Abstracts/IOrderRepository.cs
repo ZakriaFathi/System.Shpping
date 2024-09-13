@@ -9,6 +9,7 @@ using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
 using Shipping.Application.Features.Orders.Queries;
+using Shipping.Application.Features.Orders.Queries.GetOrderByOrderNo;
 using Shipping.Application.Features.Orders.Queries.ShearchOrder;
 
 namespace Shipping.Application.Abstracts;
@@ -23,6 +24,7 @@ public interface IOrderRepository
     Task<Result<string>> ChangeOrderStateByRepresentativeAsync(ChangeOrderStateByRepresentativeRequest request, CancellationToken cancellationToken);
     Task<Result<string>> InsertRepresentativeInOrderAsync(InsertRepresentativeInOrderRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetOrderResponse>>> GetOrderByBranchIdAsync(GetOrderByBranchIdRequest request, CancellationToken cancellationToken);
+    Task<Result<List<GetOrderResponse>>> GetOrderByOrderNoAsync(GetOrderByOrderNoRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetOrderResponse>>> ShearchOrderAsync(ShearchOrderRequest request, CancellationToken cancellationToken);
     Task<Result<string>> DeleteOrder(DeleteOrderRequest request, CancellationToken cancellationToken);
 

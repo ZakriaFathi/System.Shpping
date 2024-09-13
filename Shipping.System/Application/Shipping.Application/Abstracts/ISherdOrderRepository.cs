@@ -27,6 +27,13 @@ public interface ISherdOrderRepository
     
     Task<Result<List<GetOrderResponse>>> GetOrderByCityNameAndRepresentative(Guid representativeId, string cityName, Guid branchId,
         CancellationToken cancellationToken);
+    Task<Result<List<GetOrderResponse>>> GetOrderBySenderPhoneNo(string senderPhoneNo, Guid branchId,
+        CancellationToken cancellationToken);
+    Task<Result<List<GetOrderResponse>>> GetOrderBySenderPhoneNoAndOrderNo(string senderPhoneNo, string orderNo, Guid branchId,
+        CancellationToken cancellationToken);  
+    Task<Result<List<GetOrderResponse>>> GetOrderByOrderNo(string orderNo, Guid branchId,
+        CancellationToken cancellationToken); 
+
     
     Task<Result<List<GetOrderResponse>>> GetOrderByAll(OrderState state ,Guid representativeId , string cityName, Guid branchId, CancellationToken cancellationToken);
     
