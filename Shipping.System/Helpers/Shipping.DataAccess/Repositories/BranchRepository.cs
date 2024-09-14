@@ -43,7 +43,7 @@ public class BranchRepository : IBranchRepository
     {
         var branch = await _shippingDb.Branchs.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
         if (branch == null)
-            return Result.Fail("الفرع غير موجودة مسبقا");   
+            return Result.Fail("الفرع غير موجودة");   
         
         branch.Name = request.Name;
         branch.IsMajor = request.IsMajor;
@@ -90,7 +90,7 @@ public class BranchRepository : IBranchRepository
     {
         var branch = await _shippingDb.Branchs.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
         if(branch == null)
-            return Result.Fail("هذا الفرع غير موجود");
+            return Result.Fail("الفرع غير موجود");
         
         _shippingDb.Branchs.Remove(branch);
         await _shippingDb.SaveChangesAsync(cancellationToken);

@@ -43,11 +43,7 @@ public class PermissionsRepository  : IPermissionsRepository
         return permissions;
     }
     public async Task<Result> DeleteUserPermissions(DeletePermissionRequest request, CancellationToken cancellationToken)
-    {
-        // var deletePermission = await _identityRepository.DeleteUserClaims(request.UserId.ToString(), cancellationToken);
-        // if (!deletePermission.IsSuccess)
-        //     return Result.Fail(deletePermission.Errors.ToList());
-        
+    { 
         var permissions = await _shippingDb.UserPermissions
             .Where(x => x.CustomerId == request.UserId)
             .ToListAsync(cancellationToken);        

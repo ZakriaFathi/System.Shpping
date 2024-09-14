@@ -14,7 +14,9 @@ namespace Shipping.Utils.Enums
         Delivered,
         Returning,
         ReturnInTheWarehouse,
-        ReturnInCustomer,
+        DeliveredNdClosed,
+        ReturnNdClosed,
+        // ReturnInCustomer,
     }
     public enum OrderStateRepresentative
     {

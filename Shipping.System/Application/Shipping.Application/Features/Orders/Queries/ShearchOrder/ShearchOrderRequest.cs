@@ -21,5 +21,6 @@ public enum OrderStateVm
     Delivered,
     Returning,
     ReturnInTheWarehouse,
-    ReturnInCustomer,
+    DeliveredNdClosed,
+    ReturnNdClosed,
 }

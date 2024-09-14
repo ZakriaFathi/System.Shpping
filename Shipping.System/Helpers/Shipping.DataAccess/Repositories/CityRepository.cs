@@ -49,7 +49,7 @@ public class CityRepository : ICityRepository
     {
         var city = await _shippingDb.Cities.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
         if (city == null)
-            return Result.Fail("المدينة غير موجودة مسبقا");    
+            return Result.Fail("المدينة غير موجودة");    
         
         city.Name = request.Name;
         city.Price = request.Price;
@@ -115,7 +115,7 @@ public class CityRepository : ICityRepository
     {
         var City = await _shippingDb.Cities.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
         if(City == null)
-            return Result.Fail("هذا المدينه غير موجود");
+            return Result.Fail("المدينه غير موجود");
         
         _shippingDb.Cities.Remove(City);
         await _shippingDb.SaveChangesAsync(cancellationToken);

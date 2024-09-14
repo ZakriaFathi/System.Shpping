@@ -147,12 +147,24 @@ public class OrderRepository : IOrderRepository
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
+
+        if (order.OrderState == OrderState.InTheWarehouse || order.OrderState == OrderState.ReturnInTheWarehouse)
+        {
+            order.OrderState = OrderState.ReturnNdClosed;
+            
+        }else if(order.OrderState == OrderState.Delivered)
+        {
+            order.OrderState = OrderState.DeliveredNdClosed;
+        }
+        else
+        {
+            return Result.Fail("عذراً لا يمكن إغلاق الطلب");
+        }
         
-        order.OrderState = OrderState.ReturnInCustomer;
+
         order.UpdatedAt = DateTime.Now;
-       
         await _shippingDb.SaveChangesAsync(cancellationToken);
-        return "تم قبول الطلب بنجاح";
+        return "تم إغلاق الطلب بنجاح";
     }
     
     public async Task<Result<string>> ChangeOrderStateByRepresentativeAsync(ChangeOrderStateByRepresentativeRequest request,
@@ -176,7 +188,7 @@ public class OrderRepository : IOrderRepository
         };
 
         if (types is null)
-            return Result.Fail("Order type not found");
+            return Result.Fail("عذراً لا يمكن تغيير حالة الطلب");
         
         order.OrderState = types.Value;
         order.UpdatedAt = DateTime.Now;
@@ -266,7 +278,8 @@ public class OrderRepository : IOrderRepository
             OrderStateVm.Delivered => OrderState.Delivered,
             OrderStateVm.Returning => OrderState.Returning,
             OrderStateVm.ReturnInTheWarehouse => OrderState.ReturnInTheWarehouse,
-            OrderStateVm.ReturnInCustomer => OrderState.ReturnInCustomer,
+            OrderStateVm.DeliveredNdClosed => OrderState.DeliveredNdClosed,
+            OrderStateVm.ReturnNdClosed => OrderState.ReturnNdClosed,
             _ => null
         };
         
