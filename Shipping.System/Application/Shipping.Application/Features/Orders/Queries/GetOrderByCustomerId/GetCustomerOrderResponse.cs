@@ -7,7 +7,7 @@ public class GetCustomerOrderResponse
 {
     public Guid OrderId { get; set; }
     public string OrderNo { get; set; }
-    public string OrderState { get; set; }
+    public OrderState OrderState { get; set; }
     public string Dscription { get; set; }
     public string RecipientAddress { get; set; }
     public int? CountOfItems { get; set; }

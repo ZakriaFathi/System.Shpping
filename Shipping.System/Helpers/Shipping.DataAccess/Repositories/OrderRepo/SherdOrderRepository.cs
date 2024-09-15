@@ -30,7 +30,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -55,7 +55,7 @@ public class SherdOrderRepository : ISherdOrderRepository
         return orders;
     }
 
-    public async Task<Result<CityVm>> GetCityName(Guid branchId, Guid cityId, CancellationToken cancellationToken)
+    public async Task<Result<CityVm>> GetCityId(Guid branchId, Guid cityId, CancellationToken cancellationToken)
     {
         var branch = await _branchRepository.GetBranchByIdAsync(new GetBranchByIdRequest()
         {
@@ -96,7 +96,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -123,19 +123,23 @@ public class SherdOrderRepository : ISherdOrderRepository
         return orders;
     }
 
-    public async Task<Result<List<GetOrderResponse>>> GetOrderByStateAndRepresentative(OrderState state, Guid representativeId, Guid branchId,
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByStateAndRepresentativeId(OrderState state, Guid representativeId, Guid branchId,
         CancellationToken cancellationToken)
     {
+        var representative = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == representativeId, cancellationToken);
+        if(representative == null)
+            return Result.Fail("الرجاء تأكد من رقم المندوب"); 
+        
         var orders = await _shippingDb.Orders
             .Where(x => x.BranchId == branchId &&
                         x.OrderState == state &&
-                        x.RepresentativesId == representativeId
+                        x.RepresentativesId == representative.Id
             )
             .Select(x => new GetOrderResponse
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -164,14 +168,18 @@ public class SherdOrderRepository : ISherdOrderRepository
 
     public async Task<Result<List<GetOrderResponse>>> GetOrderByRepresentativeId(Guid representativeId, Guid branchId, CancellationToken cancellationToken)
     {
+        var representative = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == representativeId, cancellationToken);
+        if(representative == null)
+            return Result.Fail("الرجاء تأكد من رقم المندوب"); 
+        
         var orders = await _shippingDb.Orders
             .Where(x => x.BranchId == branchId &&
-                        x.RepresentativesId == representativeId )
+                        x.RepresentativesId == representative.Id )
             .Select(x => new GetOrderResponse
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -198,7 +206,7 @@ public class SherdOrderRepository : ISherdOrderRepository
         return orders;
     }
 
-    public async Task<Result<List<GetOrderResponse>>> GetOrderByCityNameAndState(OrderState state, string cityName, Guid branchId, CancellationToken cancellationToken)
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByCityIdAndState(OrderState state, string cityName, Guid branchId, CancellationToken cancellationToken)
     {
         var orders = await _shippingDb.Orders
             .Where(x => x.BranchId == branchId &&
@@ -209,7 +217,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -236,7 +244,7 @@ public class SherdOrderRepository : ISherdOrderRepository
         return orders;
     }
 
-    public async Task<Result<List<GetOrderResponse>>> GetOrderByCityName(string cityName, Guid branchId, CancellationToken cancellationToken)
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByCityId(string cityName, Guid branchId, CancellationToken cancellationToken)
     {
         var orders = await _shippingDb.Orders
             .Where(x => x.BranchId == branchId &&
@@ -246,7 +254,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -273,19 +281,23 @@ public class SherdOrderRepository : ISherdOrderRepository
         return orders;
     }
 
-    public async Task<Result<List<GetOrderResponse>>> GetOrderByCityNameAndRepresentative(Guid representativeId, string cityName, Guid branchId,
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByCityIdAndRepresentativeId(Guid representativeId, string cityName, Guid branchId,
         CancellationToken cancellationToken)
     {
+        var representative = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == representativeId, cancellationToken);
+        if(representative == null)
+            return Result.Fail("الرجاء تأكد من رقم المندوب"); 
+        
         var orders = await _shippingDb.Orders
             .Where(x => x.BranchId == branchId &&
                         x.RecipientAddress == cityName &&
-                        x.RepresentativesId == representativeId 
+                        x.RepresentativesId == representative.Id 
             )
             .Select(x => new GetOrderResponse
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -320,7 +332,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -356,7 +368,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -389,7 +401,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -428,7 +440,7 @@ public class SherdOrderRepository : ISherdOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,

@@ -115,8 +115,8 @@ public class UserManageRepository : IUserManagmentRepository
         if (!insertUser.IsSuccess)
             return Result.Fail(insertUser.Errors.ToList());
 
-        if (identityUser.Value.UserType == UserType.Employee)
-            await CreateUserPermissions(identityUser.Value.Id, cancellationToken);
+        // if (identityUser.Value.UserType == UserType.Employee)
+        //     await CreateUserPermissions(identityUser.Value.Id, cancellationToken);
 
         return identityUser.Value.Id;
 
@@ -541,57 +541,57 @@ public class UserManageRepository : IUserManagmentRepository
         return users;
     }
     
-    private async Task<Result<string>> CreateUserPermissions(string userId, CancellationToken cancellationToken)
-    {
-        var allPermissions =
-            await _permissionsService.GetAllPermissions(new GetAllPermissionsRequest(), cancellationToken);
-        
-        if (!allPermissions.IsSuccess)
-            return Result.Fail(allPermissions.Errors.ToList());
-
-        var filteredPermissions = new List<Guid>();
-        var claim = new List<Claim>();
-        
-        foreach (var role in allPermissions.Value)
-        {
-            foreach (var permission in role.Permissions)
-            {
-                if (permission.PermissionName == PermissionNames.View.ToString("G"))
-                {
-                    claim.Add(new Claim(role.RoleName, permission.PermissionName));
-                    filteredPermissions.Add(permission.PermissionId);
-                }
-            }
-        }
-
-
-        if (claim.Count <= 0)
-            return Result.Fail("لا يوجد صلاحيات");
-        
-        var claims = claim.GroupBy(x => x.Type).Select(y => new UserClaims 
-        { 
-            type = y.Key, 
-            value = y.Select(x => x.Value).ToList() 
-        }).ToList();
-        
-        var identityClims = await _identityRepository.InsertIdentityUserClaims(new InsertAndUpdateIdentityClaims()
-        {
-            UserId = userId,
-            Claims = claims
-        }, cancellationToken);
-        
-        if (!identityClims.IsSuccess)
-            return Result.Fail(identityClims.Errors.ToList());
-
-        var userClims = await _userRepository.CreateUserPermissions(new InsertAndUpdateUserPermissions()
-        {
-            UserId =   userId,
-            Permissions = filteredPermissions,
-        }, cancellationToken);
-        
-        if (!userClims.IsSuccess)
-            return Result.Fail(userClims.Errors.ToList());
-
-        return " تمت اضافة صلاحيات المستخدم بنجاح ";
-    }
+    // private async Task<Result<string>> CreateUserPermissions(string userId, CancellationToken cancellationToken)
+    // {
+    //     var allPermissions =
+    //         await _permissionsService.GetAllPermissions(new GetAllPermissionsRequest(), cancellationToken);
+    //     
+    //     if (!allPermissions.IsSuccess)
+    //         return Result.Fail(allPermissions.Errors.ToList());
+    //
+    //     var filteredPermissions = new List<Guid>();
+    //     var claim = new List<Claim>();
+    //     
+    //     foreach (var role in allPermissions.Value)
+    //     {
+    //         foreach (var permission in role.Permissions)
+    //         {
+    //             if (permission.PermissionName == PermissionNames.View.ToString("G"))
+    //             {
+    //                 claim.Add(new Claim(role.RoleName, permission.PermissionName));
+    //                 filteredPermissions.Add(permission.PermissionId);
+    //             }
+    //         }
+    //     }
+    //
+    //
+    //     if (claim.Count <= 0)
+    //         return Result.Fail("لا يوجد صلاحيات");
+    //     
+    //     var claims = claim.GroupBy(x => x.Type).Select(y => new UserClaims 
+    //     { 
+    //         type = y.Key, 
+    //         value = y.Select(x => x.Value).ToList() 
+    //     }).ToList();
+    //     
+    //     var identityClims = await _identityRepository.InsertIdentityUserClaims(new InsertAndUpdateIdentityClaims()
+    //     {
+    //         UserId = userId,
+    //         Claims = claims
+    //     }, cancellationToken);
+    //     
+    //     if (!identityClims.IsSuccess)
+    //         return Result.Fail(identityClims.Errors.ToList());
+    //
+    //     var userClims = await _userRepository.CreateUserPermissions(new InsertAndUpdateUserPermissions()
+    //     {
+    //         UserId =   userId,
+    //         Permissions = filteredPermissions,
+    //     }, cancellationToken);
+    //     
+    //     if (!userClims.IsSuccess)
+    //         return Result.Fail(userClims.Errors.ToList());
+    //
+    //     return " تمت اضافة صلاحيات المستخدم بنجاح ";
+    // }
 }

@@ -11,5 +11,5 @@ public class GetRepresentativeOrderResponse
     public string RecipientAddress { get; set; }
     public string SenderPhoneNo { get; set; }
     public string RecipientPhoneNo { get; set; }
-    public string OrderState { get; set; }
+    public OrderState OrderState { get; set; }
 }

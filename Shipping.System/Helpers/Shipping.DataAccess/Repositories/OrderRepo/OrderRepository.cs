@@ -33,7 +33,7 @@ public class OrderRepository : IOrderRepository
     {
         var customer = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
 
-        var city = await _sherdOrder.GetCityName(request.BranchId, request.CityId, cancellationToken);
+        var city = await _sherdOrder.GetCityId(request.BranchId, request.CityId, cancellationToken);
         
         var sequenceNum =  await _shippingDb.GenerateSequance();
         if (!sequenceNum.IsSuccess) 
@@ -75,7 +75,7 @@ public class OrderRepository : IOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 Dscription = x.Dscription,
                 RecipientAddress = x.RecipientAddress,
                 CountOfItems = x.CountOfItems,
@@ -105,7 +105,7 @@ public class OrderRepository : IOrderRepository
             .Select(x => new GetRepresentativeOrderResponse
             {
                 OrderId = x.Id,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 OrderNo = x.OrderNo,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
@@ -232,7 +232,7 @@ public class OrderRepository : IOrderRepository
             {
                 OrderId = x.Id,
                 OrderNo = x.OrderNo,
-                OrderState = x.OrderState.ToString("G"),
+                OrderState = x.OrderState,
                 RecipientAddress = x.RecipientAddress,
                 Price = x.Price,
                 RecipientPhoneNo = x.RecipientPhoneNo,
@@ -268,7 +268,7 @@ public class OrderRepository : IOrderRepository
     {
         var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
         
-        var city = await _sherdOrder.GetCityName(employee.BranchId.Value, request.CityId, cancellationToken);
+        var city = await _sherdOrder.GetCityId(employee.BranchId.Value, request.CityId, cancellationToken);
 
         OrderState? types = request.OrderState switch
         {
@@ -290,12 +290,12 @@ public class OrderRepository : IOrderRepository
             (true, true, true) => await _sherdOrder.GetOrders(cancellationToken),
             (false, true, true) => await _sherdOrder.GetOrderByState(types.Value, employee.BranchId.Value,
                 cancellationToken),
-            (false, false, true) => await _sherdOrder.GetOrderByCityNameAndState(types.Value, city.Value.Name, employee.BranchId.Value,
+            (false, false, true) => await _sherdOrder.GetOrderByCityIdAndState(types.Value, city.Value.Name, employee.BranchId.Value,
                 cancellationToken),
-            (false, true, false) => await _sherdOrder.GetOrderByStateAndRepresentative(types.Value,
+            (false, true, false) => await _sherdOrder.GetOrderByStateAndRepresentativeId(types.Value,
                 request.RepresentativeId, employee.BranchId.Value, cancellationToken),
-            (true, false, true) => await _sherdOrder.GetOrderByCityName(city.Value.Name, employee.BranchId.Value, cancellationToken),
-            (true, false, false) => await _sherdOrder.GetOrderByCityNameAndRepresentative(request.RepresentativeId,
+            (true, false, true) => await _sherdOrder.GetOrderByCityId(city.Value.Name, employee.BranchId.Value, cancellationToken),
+            (true, false, false) => await _sherdOrder.GetOrderByCityIdAndRepresentativeId(request.RepresentativeId,
                 city.Value.Name, employee.BranchId.Value, cancellationToken), 
             (true, true, false) => await _sherdOrder.GetOrderByRepresentativeId(request.RepresentativeId, 
                 employee.BranchId.Value, cancellationToken),
