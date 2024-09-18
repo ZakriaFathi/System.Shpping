@@ -6,6 +6,7 @@ using Shipping.Application.Features.Branchs.Commands.DeleteBranch;
 using Shipping.Application.Features.Branchs.Commands.UpdateBranch;
 using Shipping.Application.Features.Branchs.Queries;
 using Shipping.Application.Features.Branchs.Queries.GetBranchs;
+using Shipping.Domain.Entities;
 using Shipping.Utils.Vm;
 
 namespace Shipping.Api.Controllers;

@@ -63,7 +63,8 @@ public class CityRepository : ICityRepository
     {
         if (request.BranchId == Guid.Empty)
         {
-            return await GetCities(cancellationToken);
+            // return await GetCities(cancellationToken);
+            return Result.Fail<List<CitiesResopnse>>("ادخل الفرع");
         }
 
         var cities = await _shippingDb.Cities

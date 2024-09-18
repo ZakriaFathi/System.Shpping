@@ -144,10 +144,7 @@ public static class ExtensionsAuthentications
             }); 
             options.AddPolicy("BranchManagementView", policyUser =>
             {
-                policyUser.RequireRole("Employee", "Owner");
-                policyUser.RequireClaim(RoleType.BranchManagement.ToString("G"), 
-                    PermissionNames.View.ToString("G")
-                ); 
+                policyUser.RequireRole("Employee", "Owner" , "User");
             }); 
             options.AddPolicy("BranchManagementDelete", policyUser =>
             {

@@ -12,7 +12,6 @@ using Shipping.Utils.Vm;
 
 namespace Shipping.Api.Controllers;
 
-
 public class CityController : BaseController
 {
     private readonly IMediator _mediator;
@@ -45,7 +44,7 @@ public class CityController : BaseController
         return result.ToOperationResult();
     }
     [HttpGet("GetCitiesByBranchId")]  
-    [Authorize(Roles = "Owner")]
+    [Authorize(Roles = "User , Owner")]
     public async Task<OperationResult<List<CitiesResopnse>>> GetCitiesByBranchId([FromQuery]GetCitiesByBranchIdRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);
