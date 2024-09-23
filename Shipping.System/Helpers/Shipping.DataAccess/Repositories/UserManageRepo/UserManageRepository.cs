@@ -212,6 +212,14 @@ public class UserManageRepository : IUserManagmentRepository
                     PhoneNumber = request.PhoneNumber,
                     Address = request.Address,
                     Name = request.FristName + " " + request.LastName
+                }, cancellationToken),
+            UserType.User => await _userRepository.UpdateCustomerAsync(
+                new InsertAndUpdateCustomerCommnd()
+                {
+                    UserId = Guid.Parse(updateUser.Value),
+                    PhoneNumber = request.PhoneNumber,
+                    Address = request.Address,
+                    Name = request.FristName + " " + request.LastName
                 }, cancellationToken)
         };
         if (!update.IsSuccess)

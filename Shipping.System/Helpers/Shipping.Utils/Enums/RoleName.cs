@@ -7,7 +7,7 @@ public enum RoleName
     [Permission(PermissionNames.View,PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]
     UserManagement,
     
-    [Permission(PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]
+    [Permission(PermissionNames.View,PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]
     BranchManagement,
     
     [Permission(PermissionNames.View,PermissionNames.Create, PermissionNames.Edit ,PermissionNames.Delete)]

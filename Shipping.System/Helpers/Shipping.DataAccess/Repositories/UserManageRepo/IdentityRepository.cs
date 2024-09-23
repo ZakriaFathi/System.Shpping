@@ -115,9 +115,7 @@ public class IdentityRepository : IIdentityRepository
         user.FirstName = command.FirstName;
         user.LastName = command.LastName;
         user.PhoneNumber = command.PhoneNumber;
-        user.Email = command.Email;
         user.Address = command.Address;
-        user.UserName = command.UserName;
         
         var result = await _userManager.UpdateAsync(user);
         
