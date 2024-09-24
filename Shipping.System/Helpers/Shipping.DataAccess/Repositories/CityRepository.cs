@@ -23,12 +23,10 @@ public class CityRepository : ICityRepository
 
     public async Task<Result<string>> CreateCityAsync(CreateCityRequest request, CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
         var city = await _shippingDb.Cities
-            .FirstOrDefaultAsync(x => employee != null &&
+            .FirstOrDefaultAsync(x => 
                                       x.Name == request.Name &&
-                                      x.BranchId == employee.BranchId, cancellationToken);
+                                      x.BranchId == request.BranchId, cancellationToken);
         if (city != null)
             return Result.Fail("المدينة موجودة مسبقا");
         
@@ -36,7 +34,7 @@ public class CityRepository : ICityRepository
         {
             Name = request.Name,
             Price = request.Price,
-            BranchId = employee.BranchId.Value
+            BranchId = request.BranchId
         };
         
         await _shippingDb.Cities.AddAsync(newCity, cancellationToken);
@@ -62,10 +60,8 @@ public class CityRepository : ICityRepository
     public async Task<Result<List<CitiesResopnse>>> GetCitiesByBranchIdAsync(GetCitiesByBranchIdRequest request, CancellationToken cancellationToken)
     {
         if (request.BranchId == Guid.Empty)
-        {
             // return await GetCities(cancellationToken);
             return Result.Fail<List<CitiesResopnse>>("ادخل الفرع");
-        }
 
         var cities = await _shippingDb.Cities
             .Include(p => p.Branch)

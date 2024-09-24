@@ -12,6 +12,7 @@ using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
 using Shipping.Application.Features.Orders.Queries;
 using Shipping.Application.Features.Orders.Queries.GetOrderByOrderNo;
+using Shipping.Application.Features.Orders.Queries.GetWallet;
 using Shipping.Application.Features.Orders.Queries.ShearchOrder;
 using Shipping.DataAccess.Persistence.DataBase;
 using Shipping.Domain.Entities;
@@ -29,21 +30,24 @@ public class OrderRepository : IOrderRepository
         _shippingDb = shippingDb;
         _sherdOrder = sherdOrder;
     }
+
     public async Task<Result<string>> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken)
     {
-        var customer = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        var customer =
+            await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
 
         var city = await _sherdOrder.GetCityId(request.BranchId, request.CityId, cancellationToken);
-        
-        var sequenceNum =  await _shippingDb.GenerateSequance();
-        if (!sequenceNum.IsSuccess) 
+
+        var sequenceNum = await _shippingDb.GenerateSequance();
+        if (!sequenceNum.IsSuccess)
             return Result.Fail("يبدو أن خادم متوقف يرجى إعادة المحاولة في وقت لاحق");
 
         if (customer != null)
         {
             var order = new Order
             {
-                OrderNo =  sequenceNum.Value,
+                OrderNo = sequenceNum.Value,
                 OrderState = OrderState.Pending,
                 Dscription = request.Dscription,
                 RecipientAddress = city.Value.Name,
@@ -55,20 +59,21 @@ public class OrderRepository : IOrderRepository
                 BranchId = request.BranchId,
                 Price = city.Value.Price,
                 OrderPrice = request.OrderPrice
-                
             };
             _shippingDb.Orders.Add(order);
         }
 
         await _shippingDb.SaveChangesAsync(cancellationToken);
         return "تم انشاء الطلب بنجاح";
-        
     }
 
-    public async Task<Result<List<GetCustomerOrderResponse>>> GetOrderByCustomerAsync(GetOrderByCustomerRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetCustomerOrderResponse>>> GetOrderByCustomerAsync(GetOrderByCustomerRequest request,
+        CancellationToken cancellationToken)
     {
-        var customer = await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+        var customer =
+            await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
         var orders = await _shippingDb.Orders
             .Where(x => customer != null && x.CustomerId == customer.Id)
             .Select(x => new GetCustomerOrderResponse
@@ -93,12 +98,14 @@ public class OrderRepository : IOrderRepository
         if (orders.Count <= 0)
             return Result.Fail("لايوجد طلبات");
         return orders;
-        
     }
 
-    public async Task<Result<List<GetRepresentativeOrderResponse>>> GetOrderByRepresentativeAsync(GetOrderByRepresentativeRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetRepresentativeOrderResponse>>> GetOrderByRepresentativeAsync(
+        GetOrderByRepresentativeRequest request, CancellationToken cancellationToken)
     {
-        var representatives = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        var representatives =
+            await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
 
         var orders = await _shippingDb.Orders
             .Where(x => representatives != null && x.RepresentativesId == representatives.Id)
@@ -113,37 +120,43 @@ public class OrderRepository : IOrderRepository
                 RecipientPhoneNo = x.RecipientPhoneNo,
                 SenderPhoneNo = x.SenderPhoneNo
             }).ToListAsync(cancellationToken);
-        
+
         if (orders.Count <= 0)
             return Result.Fail("لايوجد طلبات");
         return orders;
     }
 
-    public async Task<Result<string>> AcceptanceOrderAsync(AcceptanceOrdersRequest request, CancellationToken cancellationToken)
+    public async Task<Result<string>> AcceptanceOrderAsync(AcceptanceOrdersRequest request,
+        CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        var employee =
+            await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
 
         var order = await _shippingDb.Orders
-            .FirstOrDefaultAsync(x => employee != null 
-                                      && x.OrderNo == request.OrderNo 
+            .FirstOrDefaultAsync(x => employee != null
+                                      && x.OrderNo == request.OrderNo
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
-        
+
         order.OrderState = OrderState.InTheWarehouse;
         order.UpdatedAt = DateTime.Now;
-       
+
         await _shippingDb.SaveChangesAsync(cancellationToken);
-        return "تم قبول الطلب بنجاح";    
+        return "تم قبول الطلب بنجاح";
     }
 
-    public async Task<Result<string>> RollBackOrderAsync(RollBackOrderRequest request, CancellationToken cancellationToken)
+    public async Task<Result<string>> RollBackOrderAsync(RollBackOrderRequest request,
+        CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
+        var employee =
+            await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
 
         var order = await _shippingDb.Orders
-            .FirstOrDefaultAsync(x => employee != null 
-                                      && x.OrderNo == request.OrderNo 
+            .FirstOrDefaultAsync(x => employee != null
+                                      && x.OrderNo == request.OrderNo
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
@@ -151,8 +164,8 @@ public class OrderRepository : IOrderRepository
         if (order.OrderState == OrderState.InTheWarehouse || order.OrderState == OrderState.ReturnInTheWarehouse)
         {
             order.OrderState = OrderState.ReturnNdClosed;
-            
-        }else if(order.OrderState == OrderState.Delivered)
+        }
+        else if (order.OrderState == OrderState.Delivered)
         {
             order.OrderState = OrderState.DeliveredNdClosed;
         }
@@ -160,50 +173,56 @@ public class OrderRepository : IOrderRepository
         {
             return Result.Fail("عذراً لا يمكن إغلاق الطلب");
         }
-        
+
 
         order.UpdatedAt = DateTime.Now;
         await _shippingDb.SaveChangesAsync(cancellationToken);
         return "تم إغلاق الطلب بنجاح";
     }
-    
-    public async Task<Result<string>> ChangeOrderStateByRepresentativeAsync(ChangeOrderStateByRepresentativeRequest request,
+
+    public async Task<Result<string>> ChangeOrderStateByRepresentativeAsync(
+        ChangeOrderStateByRepresentativeRequest request,
         CancellationToken cancellationToken)
     {
-        var representatives = await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+        var representatives =
+            await _shippingDb.Representatives.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
         var order = await _shippingDb.Orders
-            .FirstOrDefaultAsync(x => representatives != null 
-                                      && x.OrderNo == request.OrderNo 
+            .FirstOrDefaultAsync(x => representatives != null
+                                      && x.OrderNo == request.OrderNo
                                       && x.BranchId == representatives.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
-        
+
         OrderState? types = request.OrderState switch
         {
             OrderStateRepresentative.Delivered => OrderState.Delivered,
             OrderStateRepresentative.Returning => OrderState.Returning,
             OrderStateRepresentative.ReturnInTheWarehouse => OrderState.ReturnInTheWarehouse,
-            _ =>  null
+            _ => null
         };
 
         if (types is null)
             return Result.Fail("عذراً لا يمكن تغيير حالة الطلب");
-        
+
         order.OrderState = types.Value;
         order.UpdatedAt = DateTime.Now;
-        
+
         await _shippingDb.SaveChangesAsync(cancellationToken);
         return "تم تغيير حالة الطلب بنجاح";
     }
 
-    public async Task<Result<string>> InsertRepresentativeInOrderAsync(InsertRepresentativeInOrderRequest request, CancellationToken cancellationToken)
+    public async Task<Result<string>> InsertRepresentativeInOrderAsync(InsertRepresentativeInOrderRequest request,
+        CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+        var employee =
+            await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
         var order = await _shippingDb.Orders
-            .FirstOrDefaultAsync(x => employee != null 
-                                      && x.OrderNo == request.OrderNo 
+            .FirstOrDefaultAsync(x => employee != null
+                                      && x.OrderNo == request.OrderNo
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
@@ -212,20 +231,22 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(x => x.UserId == request.RepresentativeId, cancellationToken);
         if (result == null)
             return Result.Fail("المندوب غير موجود");
-        
+
         var representative = result.Id;
         order.RepresentativesId = representative;
         order.OrderState = OrderState.DeliveredToTheRepresentative;
         order.UpdatedAt = DateTime.Now;
-        
+
         await _shippingDb.SaveChangesAsync(cancellationToken);
         return "تم تعيين المندوب بنجاح";
     }
-    public async Task<Result<List<GetOrderResponse>>> GetOrderByBranchIdAsync(GetOrderByBranchIdRequest request, CancellationToken cancellationToken)
+
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByBranchIdAsync(GetOrderByBranchIdRequest request,
+        CancellationToken cancellationToken)
     {
         if (request.BranchId == Guid.Empty)
             return await _sherdOrder.GetOrders(cancellationToken);
-        
+
         var orders = await _shippingDb.Orders
             .Where(x => x.BranchId == request.BranchId)
             .Select(x => new GetOrderResponse
@@ -257,17 +278,23 @@ public class OrderRepository : IOrderRepository
         return orders;
     }
 
-    public async Task<Result<List<GetOrderResponse>>> GetOrderByOrderNoAsync(GetOrderByOrderNoRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetOrderResponse>>> GetOrderByOrderNoAsync(GetOrderByOrderNoRequest request,
+        CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+        var employee =
+            await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
         return await _sherdOrder.GetOrderByOrderNo(request.OrderNo, employee.BranchId.Value, cancellationToken);
     }
 
-    public async Task<Result<List<GetOrderResponse>>> ShearchOrderAsync(ShearchOrderRequest request, CancellationToken cancellationToken)
+    public async Task<Result<List<GetOrderResponse>>> ShearchOrderAsync(ShearchOrderRequest request,
+        CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+        var employee =
+            await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
         var city = await _sherdOrder.GetCityId(employee.BranchId.Value, request.CityId, cancellationToken);
 
         OrderState? types = request.OrderState switch
@@ -282,7 +309,7 @@ public class OrderRepository : IOrderRepository
             OrderStateVm.ReturnNdClosed => OrderState.ReturnNdClosed,
             _ => null
         };
-        
+
         var orderCriteria = (types == null, request.CityId == Guid.Empty, request.RepresentativeId == Guid.Empty);
 
         return orderCriteria switch
@@ -290,37 +317,58 @@ public class OrderRepository : IOrderRepository
             (true, true, true) => await _sherdOrder.GetOrders(cancellationToken),
             (false, true, true) => await _sherdOrder.GetOrderByState(types.Value, employee.BranchId.Value,
                 cancellationToken),
-            (false, false, true) => await _sherdOrder.GetOrderByCityIdAndState(types.Value, city.Value.Name, employee.BranchId.Value,
+            (false, false, true) => await _sherdOrder.GetOrderByCityIdAndState(types.Value, city.Value.Name,
+                employee.BranchId.Value,
                 cancellationToken),
             (false, true, false) => await _sherdOrder.GetOrderByStateAndRepresentativeId(types.Value,
                 request.RepresentativeId, employee.BranchId.Value, cancellationToken),
-            (true, false, true) => await _sherdOrder.GetOrderByCityId(city.Value.Name, employee.BranchId.Value, cancellationToken),
+            (true, false, true) => await _sherdOrder.GetOrderByCityId(city.Value.Name, employee.BranchId.Value,
+                cancellationToken),
             (true, false, false) => await _sherdOrder.GetOrderByCityIdAndRepresentativeId(request.RepresentativeId,
-                city.Value.Name, employee.BranchId.Value, cancellationToken), 
-            (true, true, false) => await _sherdOrder.GetOrderByRepresentativeId(request.RepresentativeId, 
+                city.Value.Name, employee.BranchId.Value, cancellationToken),
+            (true, true, false) => await _sherdOrder.GetOrderByRepresentativeId(request.RepresentativeId,
                 employee.BranchId.Value, cancellationToken),
             _ => await _sherdOrder.GetOrderByAll(types.Value, request.RepresentativeId, city.Value.Name,
                 employee.BranchId.Value, cancellationToken)
         };
-        
     }
 
     public async Task<Result<string>> DeleteOrder(DeleteOrderRequest request, CancellationToken cancellationToken)
     {
-        var employee = await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId), cancellationToken);
-        
+        var employee =
+            await _shippingDb.Employees.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
         var order = await _shippingDb.Orders
-            .FirstOrDefaultAsync(x => employee != null 
-                                      && x.Id == request.Id 
+            .FirstOrDefaultAsync(x => employee != null
+                                      && x.Id == request.Id
                                       && x.BranchId == employee.BranchId, cancellationToken);
         if (order == null)
             return Result.Fail("الطلب غير موجود");
-        
+
         _shippingDb.Orders.Remove(order);
         await _shippingDb.SaveChangesAsync(cancellationToken);
-        
+
         return "تم الحذف";
     }
-    
-    
+
+    public async Task<Result<string>> GetWallet(GetWalletRequest request, CancellationToken cancellationToken)
+    {
+        var customer =
+            await _shippingDb.Customers.FirstOrDefaultAsync(x => x.UserId == Guid.Parse(request.UserId),
+                cancellationToken);
+
+        var total = await _shippingDb.Orders.Where(x =>
+                customer != null && x.OrderState == OrderState.Delivered && x.CustomerId == customer.Id)
+            .Select(x => x.OrderPrice).ToListAsync(cancellationToken);
+
+        if (total.Count <= 0)
+            return Result.Fail("لا يوجد رصيد في المحفظة");
+
+        var totalPrice = total.Sum().ToString();
+
+        if (totalPrice != null) return totalPrice;
+
+        return "";
+    }
 }

@@ -23,14 +23,9 @@ public class CityController : BaseController
     
     [HttpPost("CreateCity")]
     [Authorize("CityManagementCreate")]
-    public async Task<OperationResult<string>> CreateCity([FromQuery] string name,[FromQuery] decimal price, CancellationToken cancellationToken)
+    public async Task<OperationResult<string>> CreateCity(CreateCityRequest request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new CreateCityRequest()
-        {
-            Name = name,
-            Price = price,
-            UserId = GetUserId(),
-        }, cancellationToken);
+        var result = await _mediator.Send(request, cancellationToken);
 
         return result.ToOperationResult();
     }

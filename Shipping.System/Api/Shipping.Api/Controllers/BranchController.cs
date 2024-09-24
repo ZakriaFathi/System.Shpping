@@ -24,7 +24,7 @@ public class BranchController : ControllerBase
     }
     
     [HttpPost("CreateBranch")]
-    [Authorize("BranchManagementCreate")]
+    [Authorize(Roles = "Owner")]
     public async Task<OperationResult<string>> CreateBranch([FromBody] CreateBranchRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
@@ -32,7 +32,7 @@ public class BranchController : ControllerBase
         return result.ToOperationResult();
     }  
     [HttpPost("UpdateBranch")]
-    [Authorize("BranchManagementEdit")]
+    [Authorize(Roles = "Owner")]
     public async Task<OperationResult<string>> UpdateBranch([FromBody] UpdateBranchRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
@@ -40,7 +40,7 @@ public class BranchController : ControllerBase
         return result.ToOperationResult();
     }
     [HttpGet("GetBranchs")]  
-    [Authorize("BranchManagementView")]
+    [Authorize(Roles = "User , Owner")]
     public async Task<OperationResult<List<BranchsResopnse>>> GetBranchs(CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new GetBranchsRequest(), cancellationToken);
@@ -48,7 +48,7 @@ public class BranchController : ControllerBase
         return result.ToOperationResult();
     }  
     [HttpDelete("DeleteBranch")]  
-    [Authorize("BranchManagementDelete")]
+    [Authorize(Roles = "Owner")]
     public async Task<OperationResult<string>> DeleteBranch([FromQuery]DeleteBranchRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);

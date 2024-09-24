@@ -17,6 +17,7 @@ using Shipping.Application.Features.Orders.Queries.GetOrderByOrderNo;
 using Shipping.Application.Features.Orders.Queries.GetOrderByBranchId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
+using Shipping.Application.Features.Orders.Queries.GetWallet;
 using Shipping.Application.Features.Orders.Queries.ShearchOrder;
 using Shipping.Utils.Vm;
 using Swashbuckle.AspNetCore.Annotations;
@@ -170,6 +171,18 @@ public class OrderController : BaseController
         var result = await _mediator.Send(new DeleteOrderRequest()
         {
             Id = request.Id,
+            UserId = GetUserId()
+        }, cancellationToken);
+
+        return result.ToOperationResult();
+    } 
+    
+    [HttpGet("GetWallet")] 
+    [Authorize(Roles = "User")]
+    public async Task<OperationResult<string>> GetWallet(CancellationToken cancellationToken)
+    { 
+        var result = await _mediator.Send(new GetWalletRequest()
+        {
             UserId = GetUserId()
         }, cancellationToken);
 

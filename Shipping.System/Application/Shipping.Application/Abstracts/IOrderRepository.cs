@@ -10,6 +10,7 @@ using Shipping.Application.Features.Orders.Queries.GetOrderByCustomerId;
 using Shipping.Application.Features.Orders.Queries.GetOrderByRepresentativeId;
 using Shipping.Application.Features.Orders.Queries;
 using Shipping.Application.Features.Orders.Queries.GetOrderByOrderNo;
+using Shipping.Application.Features.Orders.Queries.GetWallet;
 using Shipping.Application.Features.Orders.Queries.ShearchOrder;
 
 namespace Shipping.Application.Abstracts;
@@ -27,5 +28,6 @@ public interface IOrderRepository
     Task<Result<List<GetOrderResponse>>> GetOrderByOrderNoAsync(GetOrderByOrderNoRequest request, CancellationToken cancellationToken);
     Task<Result<List<GetOrderResponse>>> ShearchOrderAsync(ShearchOrderRequest request, CancellationToken cancellationToken);
     Task<Result<string>> DeleteOrder(DeleteOrderRequest request, CancellationToken cancellationToken);
+    Task<Result<string>> GetWallet(GetWalletRequest request, CancellationToken cancellationToken);
 
 }
