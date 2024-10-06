@@ -39,6 +39,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -105,6 +107,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -148,6 +152,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -188,6 +194,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -226,6 +234,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -263,6 +273,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -306,6 +318,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -341,6 +355,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -377,6 +393,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -410,6 +428,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,
@@ -449,6 +469,8 @@ public class SherdOrderRepository : ISherdOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Representative = new RepresentativeVm
                 {
                     Name = x.Representatives.Name,

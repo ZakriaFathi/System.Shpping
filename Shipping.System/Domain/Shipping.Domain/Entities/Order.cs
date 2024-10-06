@@ -17,8 +17,7 @@ public class Order
     public decimal? Price { get; set; }
     public decimal? OrderPrice { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-
+    public DateTime? UpdatedAt { get; set; } 
     public Guid CustomerId { get; set; }
     public Customer Customers { get; set; }
 

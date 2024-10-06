@@ -125,7 +125,27 @@ public class UserRepository : IUserRepository
         
         return "تم تغيير حالة المستخدم بنجاح";
     }
-    
+    public async Task<Result<string>> ChangePassword(ChangePasswordCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _shippingDb.Users.FirstOrDefaultAsync(x=>
+            x.Id == request.UserId, cancellationToken);
+        if (user is null)
+            return Result.Fail("هذا المستخدم غير موجود" );
+        
+        if (user.Password != request.OldPassWord)
+            return Result.Fail(new List<string>() { "كلمة المرور السابقة غير صحيحة" });
+
+        if (request.NewPassWord != request.ConfirmNewPassWord)
+            return Result.Fail(new List<string>() { "كلمة المرور غير متطابقة" });
+        
+        user.Password = request.NewPassWord;
+        var result = await _shippingDb.SaveChangesAsync(cancellationToken);
+
+        if (result <= 0)
+            Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+       
+        return "تم تغيير كلمة المرور بنجاح";
+    }
 
     public async Task<Result<string>> UpdatePasswordAsync(UpdatePasswordCommnd request, CancellationToken cancellationToken)
     {

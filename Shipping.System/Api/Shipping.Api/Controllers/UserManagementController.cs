@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shipping.Api.Models;
 using Shipping.Api.Shared;
 using Shipping.Application.Features.Auth.Commands.UpdateCustomer;
+using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
@@ -17,6 +18,7 @@ using Shipping.Application.Features.UserManagement.Users.Queries.GetAdminsByBran
 using Shipping.Application.Features.UserManagement.Users.Queries.GetCustomers;
 using Shipping.Application.Features.UserManagement.Users.Queries.GetRepresentatives;
 using Shipping.Application.Features.UserManagement.Users.Queries.GetRepresentativesByBranchId;
+using Shipping.Application.Models.UserManagement;
 using Shipping.Utils.Vm;
 
 namespace Shipping.Api.Controllers;
@@ -39,7 +41,7 @@ public class UserManagementController : BaseController
        return result.ToOperationResult();
     }
     [HttpGet("GetRepresentatives")]  
-    [Authorize("UserManagementView")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<List<GetUsersResponse>>> GetRepresentatives(CancellationToken cancellationToken)
     { 
        var result = await _mediator.Send(new GetRepresentativesRequest()
@@ -58,7 +60,7 @@ public class UserManagementController : BaseController
        return result.ToOperationResult();
     } 
     [HttpGet("GetEmployees")]  
-    [Authorize("UserManagementView")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<List<GetUsersResponse>>> GetEmployees(CancellationToken cancellationToken)
     { 
        var result = await _mediator.Send(new GetEmployeesRequest()
@@ -78,7 +80,7 @@ public class UserManagementController : BaseController
     }
     
     [HttpPost("CreateUser")]
-    [Authorize("UserManagementCreate")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
@@ -87,7 +89,7 @@ public class UserManagementController : BaseController
     }
     
     [HttpPost("ChangeUserActivation")]
-    [Authorize("UserManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> ChangeUserActivation([FromBody] ChangeUserActivationRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
@@ -96,31 +98,45 @@ public class UserManagementController : BaseController
     }
     
     [HttpPost("ResetPassword")]
-    [Authorize("UserManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
         
         return result.ToOperationResult();
     } 
-    [HttpPost("CreateUserPermissions")]
-    [Authorize("UserManagementCreate")]
-    public async Task<OperationResult<string>> CreateUserPermissions([FromBody] CreateUserPermissionsRequest request, CancellationToken cancellationToken)
+    [HttpPost("ChangePassword")]
+    [Authorize(Roles = "Employee , Owner , User")]
+    public async Task<OperationResult<string>> ChangePassword([FromBody]ChangePasswordVm  request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(request, cancellationToken);
+        var result = await _mediator.Send(new ChangePasswordRequest()
+        {
+            UserId = GetUserId(),
+            OldPassWord = request.OldPassWord,
+            NewPassWord = request.NewPassWord,
+            ConfirmNewPassWord = request.ConfirmNewPassWord
+        }, cancellationToken);
         
         return result.ToOperationResult();
-    }
-    [HttpPost("UpdateUserPermissions")]
-    [Authorize("UserManagementEdit")]
-    public async Task<OperationResult<string>> UpdateUserPermissions([FromBody] UpdateUserPermissionsRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _mediator.Send(request, cancellationToken);
-        
-        return result.ToOperationResult();
-    }
+    } 
+    // [HttpPost("CreateUserPermissions")]
+    // [Authorize(Roles = "Employee , Owner")]
+    // public async Task<OperationResult<string>> CreateUserPermissions([FromBody] CreateUserPermissionsRequest request, CancellationToken cancellationToken)
+    // {
+    //     var result = await _mediator.Send(request, cancellationToken);
+    //     
+    //     return result.ToOperationResult();
+    // }
+    // [HttpPost("UpdateUserPermissions")]
+    // [Authorize(Roles = "Employee , Owner")]
+    // public async Task<OperationResult<string>> UpdateUserPermissions([FromBody] UpdateUserPermissionsRequest request, CancellationToken cancellationToken)
+    // {
+    //     var result = await _mediator.Send(request, cancellationToken);
+    //     
+    //     return result.ToOperationResult();
+    // }
     [HttpPost("UpdateUser")]
-    [Authorize("UserManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> UpdateUser([FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
@@ -144,7 +160,7 @@ public class UserManagementController : BaseController
     }
     
     [HttpDelete("DeleteUser")]  
-    [Authorize("UserManagementDelete")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> DeleteUser([FromQuery]DeleteUserRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);

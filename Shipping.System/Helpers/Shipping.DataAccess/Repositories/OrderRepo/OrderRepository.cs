@@ -87,6 +87,8 @@ public class OrderRepository : IOrderRepository
                 OrderPrice = x.OrderPrice,
                 SenderPhoneNo = x.SenderPhoneNo,
                 RecipientPhoneNo = x.RecipientPhoneNo,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Price = x.Price,
                 Representative = new RepresentativeVm
                 {
@@ -115,10 +117,13 @@ public class OrderRepository : IOrderRepository
                 OrderState = x.OrderState,
                 OrderNo = x.OrderNo,
                 RecipientAddress = x.RecipientAddress,
+                Dscription = x.Dscription,
                 Price = x.Price,
                 OrderPrice = x.OrderPrice,
                 RecipientPhoneNo = x.RecipientPhoneNo,
-                SenderPhoneNo = x.SenderPhoneNo
+                SenderPhoneNo = x.SenderPhoneNo,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
             }).ToListAsync(cancellationToken);
 
         if (orders.Count <= 0)
@@ -162,18 +167,11 @@ public class OrderRepository : IOrderRepository
             return Result.Fail("الطلب غير موجود");
 
         if (order.OrderState == OrderState.InTheWarehouse || order.OrderState == OrderState.ReturnInTheWarehouse)
-        {
             order.OrderState = OrderState.ReturnNdClosed;
-        }
         else if (order.OrderState == OrderState.Delivered)
-        {
             order.OrderState = OrderState.DeliveredNdClosed;
-        }
         else
-        {
             return Result.Fail("عذراً لا يمكن إغلاق الطلب");
-        }
-
 
         order.UpdatedAt = DateTime.Now;
         await _shippingDb.SaveChangesAsync(cancellationToken);
@@ -262,6 +260,8 @@ public class OrderRepository : IOrderRepository
                 Dscription = x.Dscription,
                 CountOfItems = x.CountOfItems,
                 OrderPrice = x.OrderPrice,
+                CreatedAt = x.CreatedAt.ToString("yyyy:MM:dd HH:mm:ss"),
+                UpdatedAt = x.UpdatedAt.Value.ToString("yyyy:MM:dd HH:mm:ss"),
                 Customer = new CustomerVm
                 {
                     Name = x.Customers.Name,

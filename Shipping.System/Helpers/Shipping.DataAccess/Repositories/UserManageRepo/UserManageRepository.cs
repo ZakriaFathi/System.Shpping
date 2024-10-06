@@ -7,6 +7,7 @@ using Shipping.Application.Abstracts;
 using Shipping.Application.Features.Auth.Commands.UpdateCustomer;
 using Shipping.Application.Features.UserManagement.Permissions.Commands.DeletePermission;
 using Shipping.Application.Features.UserManagement.Permissions.Queries.GetAllPermissions;
+using Shipping.Application.Features.UserManagement.Users.Commands.ChangePassword;
 using Shipping.Application.Features.UserManagement.Users.Commands.ChangeUserActivation;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUser;
 using Shipping.Application.Features.UserManagement.Users.Commands.CreateUserPermissions;
@@ -121,7 +122,38 @@ public class UserManageRepository : IUserManagmentRepository
         return identityUser.Value.Id;
 
     }
-    
+
+    public async Task<Result<string>> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken cancellationToken)
+    {
+        var user =
+            await _shippingDb.Users.FirstOrDefaultAsync(x => x.Id == Guid.Parse(request.UserId),
+                cancellationToken);
+        
+        var identityPassword = await _identityRepository.ChangeIdentityPassword(new ChangeIdentityPassword()
+        {
+            UserId = user.Id.ToString(),
+            OldPassword = request.OldPassWord,
+            NewPassword = request.NewPassWord,
+            ConfirmNewPassWord = request.ConfirmNewPassWord
+        }, cancellationToken);
+        
+        if (!identityPassword.IsSuccess)
+            return Result.Fail(identityPassword.Errors.ToList());
+        
+        var userPassword = await _userRepository.ChangePassword(new ChangePasswordCommand()
+        {
+            UserId = user.Id,
+            OldPassWord = request.OldPassWord,
+            NewPassWord = request.NewPassWord,
+            ConfirmNewPassWord = request.ConfirmNewPassWord
+        }, cancellationToken);
+        
+        if (!userPassword.IsSuccess)
+            return Result.Fail(userPassword.Errors.ToList());
+        
+        return "تم تغيير كلمة المرور بنجاح";
+    }
+
     public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
     {
         var user = await _identityRepository.ResetIdentityPassword(new ResetIdentityPassword()

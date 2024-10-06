@@ -52,7 +52,7 @@ public class OrderController : BaseController
     }  
     
     [HttpPost("AcceptanceOrder")]
-    [Authorize("OrderManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> AcceptanceOrder([FromBody] AcceptanceOrRollBackOrdersVm request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new AcceptanceOrdersRequest()
@@ -65,7 +65,7 @@ public class OrderController : BaseController
     }
     
     [HttpPost("RollBackOrder")]
-    [Authorize("OrderManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> RollBackOrder([FromBody] AcceptanceOrRollBackOrdersVm request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new RollBackOrderRequest()
@@ -79,7 +79,7 @@ public class OrderController : BaseController
     
     
     [HttpPost("InsertRepresentativeInOrder")]
-    [Authorize("OrderManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> InsertRepresentativeInOrder([FromBody] InsertRepresentativeInOrderVm request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new InsertRepresentativeInOrderRequest()
@@ -138,7 +138,7 @@ public class OrderController : BaseController
         return result.ToOperationResult();
     }
     [HttpGet("ShearchOrder")]
-    [Authorize("OrderManagementView")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<List<GetOrderResponse>>> ShearchOrder([FromQuery]ShearchOrderVm request, CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new ShearchOrderRequest()
@@ -152,7 +152,7 @@ public class OrderController : BaseController
         return result.ToOperationResult();
     } 
     [HttpGet("GetOrderByOrderNo")]
-    [Authorize("OrderManagementView")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<List<GetOrderResponse>>> GetOrderByOrderNo([FromQuery]GetOrderByOrderNoVm request , CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new GetOrderByOrderNoRequest()
@@ -165,7 +165,7 @@ public class OrderController : BaseController
     } 
     
     [HttpDelete("DeleteOrder")] 
-    [Authorize("OrderManagementDelete")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> DeleteOrder([FromQuery]DeleteOrderVm request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new DeleteOrderRequest()

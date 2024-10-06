@@ -22,7 +22,7 @@ public class CityController : BaseController
     }
     
     [HttpPost("CreateCity")]
-    [Authorize("CityManagementCreate")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> CreateCity(CreateCityRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(request, cancellationToken);
@@ -31,7 +31,7 @@ public class CityController : BaseController
     }
 
     [HttpPost("UpdateCity")]
-    [Authorize("CityManagementEdit")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> UpdateCity([FromBody] UpdateCityRequest request,
         CancellationToken cancellationToken)
     {
@@ -47,7 +47,7 @@ public class CityController : BaseController
         return result.ToOperationResult();
     } 
     [HttpGet("GetCities")]
-    [Authorize("CityManagementView")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<List<CitiesResopnse>>> GetCities(CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(new GetCitiesRequest()
@@ -58,7 +58,7 @@ public class CityController : BaseController
         return result.ToOperationResult();
     }
     [HttpDelete("DeleteCity")]  
-    [Authorize("CityManagementDelete")]
+    [Authorize(Roles = "Employee , Owner")]
     public async Task<OperationResult<string>> DeleteCity([FromQuery]DeleteCityRequest request,CancellationToken cancellationToken)
     { 
         var result = await _mediator.Send(request, cancellationToken);

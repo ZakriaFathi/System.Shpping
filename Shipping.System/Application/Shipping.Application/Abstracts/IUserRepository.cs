@@ -11,6 +11,8 @@ public interface IUserRepository
     Task<Result<string>> InsertCustomerAsync(InsertAndUpdateCustomerCommnd request, CancellationToken cancellationToken);
     
     Task<Result<string>> ChangeUserActivationAsync(ChangeUserActivationCommnd request, CancellationToken cancellationToken);
+    Task<Result<string>> ChangePassword(ChangePasswordCommand request, CancellationToken cancellationToken);
+
     Task<Result<string>> UpdatePasswordAsync(UpdatePasswordCommnd request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateRepresentativeAsync(InsertAndUpdateRepresentativeCommnd request, CancellationToken cancellationToken);
     Task<Result<string>> UpdateEmployeeAsync(InsertAndUpdateEmployeeCommnd request, CancellationToken cancellationToken);

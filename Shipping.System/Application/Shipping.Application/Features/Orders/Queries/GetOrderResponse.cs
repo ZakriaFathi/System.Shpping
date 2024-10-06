@@ -15,6 +15,8 @@ public class GetOrderResponse
     public string RecipientPhoneNo { get; set; }
     public string BranchName { get; set; }
     public string RecipientAddress { get; set; }
+    public string CreatedAt { get; set; }
+    public string UpdatedAt { get; set; }
     public RepresentativeVm Representative { get; set; }
     public CustomerVm Customer { get; set; }
 }

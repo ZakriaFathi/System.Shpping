@@ -139,6 +139,27 @@ public class IdentityRepository : IIdentityRepository
             "تم تغيير حالة المستخدم بنجاح" :
             Result.Fail("حدثت مشكلة بالخادم الرجاء الاتصال بالدعم الفني");
     }
+    public async Task<Result<string>> ChangeIdentityPassword(ChangeIdentityPassword command, CancellationToken cancellationToken)
+    {
+        var identity = await GetIdentityUserById(command.UserId, cancellationToken);
+        if (identity.IsFailed)
+            return Result.Fail(identity.Errors.ToList());
+        
+        var user = identity.Value;
+        
+        var password = await _userManager.CheckPasswordAsync(user, command.OldPassword);
+        if (password == false)
+            return Result.Fail(new List<string>() { "كلمة المرور السابقة غير صحيحة" });
+        
+        if (command.NewPassword != command.ConfirmNewPassWord)
+            return Result.Fail(new List<string>() { "كلمة المرور غير متطابقة" });
+
+        var result = await _userManager.ChangePasswordAsync(user, command.OldPassword, command.NewPassword);
+        if (result.Succeeded)
+            return "تم تغيير كلمة المرور بنجاح";
+
+        return Result.Fail("حدثت مشكلة في الخادم الرجاء الاتصال بالدعم الفني");
+    }
 
     public async Task<Result<string>> InsertIdentityUserClaims(InsertAndUpdateIdentityClaims command, CancellationToken cancellationToken)
     {
