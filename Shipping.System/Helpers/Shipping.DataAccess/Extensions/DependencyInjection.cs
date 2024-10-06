@@ -43,9 +43,14 @@ public static class DependencyInjection
         services.AddTransient<IUserRepository, UserRepository>();
 
         services.AddTransient<SeedService>();
+        
         using var serviceProvider = services.BuildServiceProvider();
+        
         using var appDbContext = serviceProvider.GetService<ShippingDbContext>();
-        appDbContext?.Database.Migrate();
+        appDbContext?.Database.Migrate(); 
+        using var appDbContext1 = serviceProvider.GetService<IdentityUsersDbContext>();
+        appDbContext1?.Database.Migrate();
+        
         serviceProvider.GetService<SeedService>()!.Seed().Wait();
 
     }
