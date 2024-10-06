@@ -39,15 +39,19 @@ public class OrderRepository : IOrderRepository
 
         var city = await _sherdOrder.GetCityId(request.BranchId, request.CityId, cancellationToken);
 
-        var sequenceNum = await _shippingDb.GenerateSequance();
-        if (!sequenceNum.IsSuccess)
-            return Result.Fail("يبدو أن خادم متوقف يرجى إعادة المحاولة في وقت لاحق");
+        // var sequenceNum = await _shippingDb.GenerateSequance();
+        // if (!sequenceNum.IsSuccess)
+        //     return Result.Fail("يبدو أن خادم متوقف يرجى إعادة المحاولة في وقت لاحق");.
+        
+        Random rnd = new Random();
+
+        var sequenceNum = rnd.Next(00001, 99999); 
 
         if (customer != null)
         {
             var order = new Order
             {
-                OrderNo = sequenceNum.Value,
+                OrderNo = sequenceNum.ToString(),
                 OrderState = OrderState.Pending,
                 Dscription = request.Dscription,
                 RecipientAddress = city.Value.Name,
