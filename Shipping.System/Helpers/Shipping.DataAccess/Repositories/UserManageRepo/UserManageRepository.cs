@@ -529,7 +529,7 @@ public class UserManageRepository : IUserManagmentRepository
         if(user == null)
             return Result.Fail("هذا المستخدم غير موجود");
         
-        await _permissionsService.DeleteUserPermissions(new DeletePermissionRequest() { UserId = user.Id }, cancellationToken);
+        // await _permissionsService.DeleteUserPermissions(new DeletePermissionRequest() { UserId = user.Id }, cancellationToken);
         
         _shippingDb.Users.Remove(user);
         await _shippingDb.SaveChangesAsync(cancellationToken);
